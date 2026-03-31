@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:15-3.3
+        env:
+          POSTGRES_USER: realestate
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: realestate
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U realestate -d realestate"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: postgresql://realestate:password@localhost:5432/realestate?schema=public
+      BACKEND_PORT: 4000
+      API_PREFIX: api
+      NODE_ENV: test
+      JWT_SECRET: ci-test-secret
+      CORS_ORIGIN: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      SMOKE_FRONTEND_URL: http://localhost:3000
+      SMOKE_API_URL: http://localhost:4000/api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: cd backend && npx prisma generate
+
+      - name: Run database migrations
+        run: cd backend && npx prisma migrate deploy
+
+      - name: Lint backend
+        run: cd backend && npm run lint
+
+      - name: Lint frontend
+        run: cd frontend && npm run lint
+
+      - name: Build backend
+        run: cd backend && npm run build
+
+      - name: Build frontend and capture output
+        run: npm run build:frontend 2>&1 | tee frontend-build.log
+
+      - name: Enforce route performance budgets
+        run: node scripts/check-performance-budget.js frontend-build.log
+
+      - name: Start backend (prod mode)
+        run: cd backend && npm run start:prod > ../backend.log 2>&1 &
+
+      - name: Start frontend (prod mode)
+        run: cd frontend && npm run start > ../frontend.log 2>&1 &
+
+      - name: Wait for backend
+        run: |
+          for i in {1..40}; do
+            if curl -fsS "http://localhost:4000/api/search/suggestions?q=test" >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend did not start in time"
+          exit 1
+
+      - name: Wait for frontend
+        run: |
+          for i in {1..40}; do
+            if curl -fsS "http://localhost:3000/" >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Frontend did not start in time"
+          exit 1
+
+      - name: Run smoke E2E
+        run: npm run test:smoke
+
+      - name: Print service logs on failure
+        if: failure()
+        run: |
+          echo "==== backend.log ===="
+          cat backend.log || true
+          echo "==== frontend.log ===="
+          cat frontend.log || true

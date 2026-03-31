@@ -1,0 +1,46 @@
+{
+  "name": "real-estate-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Global MLS-powered real estate platform",
+  "prisma": {
+    "seed": "ts-node backend/prisma/seed.ts"
+  },
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation concurrently --kill-others --raw \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm run test",
+    "test:frontend": "cd frontend && npm run test",
+    "test:smoke": "node smoke-e2e.js",
+    "perf:check": "node scripts/check-performance-budget.js frontend-build.log",
+    "prisma:migrate": "cd backend && npx prisma migrate dev",
+    "prisma:generate": "cd backend && npx prisma generate",
+    "prisma:studio": "cd backend && npx prisma studio"
+  },
+  "devDependencies": {
+    "@types/multer": "^2.0.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
+  },
+  "workspaces": [
+    "backend",
+    "frontend",
+    "shared"
+  ],
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "dependencies": {
+    "qs": "^6.15.0"
+  },
+  "overrides": {
+    "qs": "^6.15.0"
+  }
+}

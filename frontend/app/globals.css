@@ -1,0 +1,199 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: none; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+
+.lux-card {
+  transition: box-shadow 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+.lux-card:hover {
+  box-shadow: 0 8px 32px -8px #C9A96A55, 0 24px 60px -40px rgba(20,15,10,0.6);
+  transform: translateY(-2px) scale(1.02);
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+}
+
+body {
+  color: #1c1a17;
+  background: radial-gradient(1200px 600px at 20% -10%, #ffffff 0%, #f7f4ef 55%, #f1ece4 100%);
+  letter-spacing: 0.01em;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+.lux-site {
+  background: radial-gradient(1200px 600px at 20% -10%, #ffffff 0%, #f7f4ef 55%, #f1ece4 100%) !important;
+  color: #1c1a17;
+}
+
+.lux-site a {
+  transition: color 0.2s ease;
+}
+
+.lux-site a:hover {
+  color: #b78f4a;
+}
+
+h1, h2, h3, h4, h5, h6, .lux-heading {
+  font-family: var(--font-serif), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  letter-spacing: 0.01em;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: #c9a96a;
+  color: #1c1a17;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.lux-card {
+  background: rgba(255, 255, 255, 0.85) !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid #E8E1D7 !important;
+  border-radius: 1rem;
+  box-shadow: 0 24px 60px -40px rgba(20, 15, 10, 0.6) !important;
+}
+
+.lux-card-solid {
+  background: #ffffff !important;
+  border: 1px solid #E8E1D7 !important;
+  border-radius: 1rem;
+  box-shadow: 0 24px 60px -45px rgba(20, 15, 10, 0.6) !important;
+}
+
+.lux-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #C9A96A !important;
+  color: #1C1A17 !important;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.lux-button:hover {
+  background: #B78F4A !important;
+}
+
+.lux-button-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #1C1A17;
+  color: #F4EFE8;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.lux-button-dark:hover {
+  background: #2B2620;
+}
+
+.lux-button-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid #C9A96A !important;
+  color: #C9A96A !important;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.lux-button-outline:hover {
+  background: rgba(201, 169, 106, 0.12) !important;
+}
+
+.lux-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #E8E1D7 !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  padding: 0.5rem 1rem;
+  color: #1C1A17 !important;
+}
+
+.lux-input::placeholder {
+  color: #A19282;
+}
+
+.lux-input:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 2px rgba(201, 169, 106, 0.4);
+}
+
+.lux-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid #E8E1D7;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1C1A17;
+}
+
+.lux-form input,
+.lux-form select,
+.lux-form textarea {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #E8E1D7;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem 1rem;
+  color: #1C1A17;
+}
+
+.lux-form label {
+  color: #5F5448;
+}
+
+/* Mapbox overrides */
+.mapboxgl-popup-content {
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(20, 15, 10, 0.18);
+  padding: 1rem;
+  border: 1px solid #E8E1D7;
+  background: #fff;
+}
+
+.mapboxgl-popup-close-button {
+  color: #9CA3AF;
+}
+
+.mapboxgl-popup-close-button:hover {
+  color: #4B5563;
+}

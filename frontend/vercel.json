@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@next_public_api_url",
+    "NEXT_PUBLIC_MAPBOX_TOKEN": "@next_public_mapbox_token",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@next_public_stripe_publishable_key",
+    "NEXT_PUBLIC_SOCKET_URL": "@next_public_socket_url"
+  }
+}

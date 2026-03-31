@@ -1,0 +1,84 @@
+name: Nightly Staging Smoke
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      frontend_url:
+        description: 'Optional frontend base URL override (e.g. https://staging.example.com)'
+        required: false
+        type: string
+      api_url:
+        description: 'Optional API base URL override (e.g. https://api-staging.example.com/api)'
+        required: false
+        type: string
+
+jobs:
+  smoke-staging:
+    runs-on: ubuntu-latest
+    env:
+      SMOKE_FRONTEND_URL: ${{ inputs.frontend_url != '' && inputs.frontend_url || secrets.STAGING_FRONTEND_URL }}
+      SMOKE_API_URL: ${{ inputs.api_url != '' && inputs.api_url || secrets.STAGING_API_URL }}
+      SMOKE_CLEANUP: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate staging URLs
+        run: |
+          if [ -z "$SMOKE_FRONTEND_URL" ] || [ -z "$SMOKE_API_URL" ]; then
+            echo "Missing staging URL configuration."
+            echo "Set STAGING_FRONTEND_URL and STAGING_API_URL repo secrets, or pass workflow_dispatch inputs."
+            exit 1
+          fi
+          echo "Frontend: $SMOKE_FRONTEND_URL"
+          echo "API: $SMOKE_API_URL"
+
+      - name: Run smoke E2E against staging
+        id: smoke
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          node smoke-e2e.js 2>&1 | tee smoke-output.log
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Create run summary
+        if: always()
+        run: |
+          {
+            echo "# Nightly Staging Smoke Summary"
+            echo ""
+            echo "- Frontend URL: $SMOKE_FRONTEND_URL"
+            echo "- API URL: $SMOKE_API_URL"
+            echo "- Result: ${{ steps.smoke.outputs.exit_code == '0' && 'PASS ✅' || 'FAIL ❌' }}"
+            echo "- Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo ""
+            echo "## Smoke Output"
+            echo '```'
+            cat smoke-output.log
+            echo '```'
+          } > staging-smoke-summary.md
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-smoke-${{ github.run_id }}
+          path: |
+            smoke-output.log
+            staging-smoke-summary.md
+
+      - name: Publish GitHub step summary
+        if: always()
+        run: cat staging-smoke-summary.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail workflow if smoke failed
+        if: steps.smoke.outputs.exit_code != '0'
+        run: exit 1
