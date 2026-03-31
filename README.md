@@ -1,8 +1,8 @@
-# Global Real Estate Platform 🌍
+# Global Real Estate Platform
 
 A world-wide, MLS-powered real estate platform built for scale from day one.
 
-## 🎯 Features
+## Features
 
 - **Global Coverage**: Multi-country, multi-currency, multi-language support
 - **MLS Integration**: RESO Web API compliant, normalized data ingestion
@@ -11,7 +11,7 @@ A world-wide, MLS-powered real estate platform built for scale from day one.
 - **Scalable Architecture**: Modular monolith ready to split into microservices
 - **Real-time Features**: Property alerts, saved searches, notifications
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -40,7 +40,7 @@ A world-wide, MLS-powered real estate platform built for scale from day one.
                                    └─────────────────────────┘
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 real-estate-platform/
@@ -65,7 +65,7 @@ real-estate-platform/
 └── shared/                     # Shared types/constants
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -110,7 +110,7 @@ npm run dev
 - Backend API: http://localhost:4000
 - API Docs: http://localhost:4000/api/docs
 
-## 🗃️ Database
+## Database
 
 ### PostGIS Setup
 
@@ -128,7 +128,7 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 - **Searches**: Saved searches and alerts
 - **Transactions**: Offers, contracts, closings
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Listings
 - `GET /api/listings` - Search listings
@@ -149,7 +149,7 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 - `GET /api/users/profile` - Get profile
 - `PUT /api/users/profile` - Update profile
 
-## 🔧 Tech Stack
+## Tech Stack
 
 ### Backend
 - **Framework**: NestJS (TypeScript)
@@ -174,7 +174,7 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 - **CDN**: Cloudflare
 - **Monitoring**: Sentry, Datadog
 
-## 🌍 Multi-Region Support
+## Multi-Region Support
 
 ### Database Sharding Strategy
 - Shard by country/region for data residency
@@ -187,7 +187,7 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 - Date/time formatting
 - Unit conversion (sqft ↔ sqm)
 
-## 🔒 Security
+## Security
 
 - JWT authentication
 - Role-based access control (RBAC)
@@ -197,7 +197,7 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 - CORS configuration
 - Environment variable validation
 
-## 📊 MLS Integration
+## MLS Integration
 
 ### Supported Standards
 - RESO Web API
@@ -209,7 +209,7 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 Raw MLS Data → Adapter → Validator → Normalizer → Database
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Backend tests
@@ -227,7 +227,7 @@ cd ..
 npm run test:smoke
 ```
 
-## 🚦 CI & Performance Gates
+## CI & Performance Gates
 
 - GitHub Actions CI workflow: `.github/workflows/ci.yml`
 - Nightly staging runtime smoke workflow: `.github/workflows/nightly-staging-smoke.yml`
@@ -249,20 +249,20 @@ Nightly staging smoke workflow requires repository secrets:
 - `STAGING_FRONTEND_URL` (example: `https://staging.example.com`)
 - `STAGING_API_URL` (example: `https://api-staging.example.com/api`)
 
-## ✅ Release Readiness Docs
+## Release Readiness Docs
 
 - Staging/UAT checklist: `docs/UAT_CHECKLIST.md`
 - Monitoring and alerts runbook: `docs/MONITORING_ALERTS.md`
 - Secrets/config audit checklist: `docs/SECRETS_CONFIG_AUDIT.md`
 
-## 💼 Commercial Model Docs
+## Commercial Model Docs
 
 - Commercial policy: `docs/COMMERCIAL_POLICY.md`
 - Pricing tier matrix: `docs/PRICING_TIER_MATRIX.md`
 - Invitation-only criteria: `docs/INVITATION_ONLY_CRITERIA.md`
 - London-first 60-day launch playbook: `docs/LONDON_LAUNCH_60_DAY.md`
 
-## 📈 Performance
+## Performance
 
 - Database indexes on key search fields
 - Redis caching for hot data
@@ -271,7 +271,7 @@ Nightly staging smoke workflow requires repository secrets:
 - Lazy loading
 - Server-side rendering for SEO
 
-## 🚢 Deployment
+## Deployment
 
 ### Backend
 ```bash
@@ -292,14 +292,14 @@ npm run start
 docker-compose up -d
 ```
 
-## 📝 License
+## License
 
 MIT
 
-## 🤝 Contributing
+## Contributing
 
 This is a solo project designed to scale. Contributions welcome once MVP is live.
 
 ---
 
-Built with ❤️ for the future of real estate tech
+Built with love for the future of real estate tech
