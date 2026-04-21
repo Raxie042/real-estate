@@ -101,6 +101,9 @@ export default function Header() {
             <Link href="/valuation" className="text-[#2B2620] hover:text-[#C9A96A]">
               {t('valuation')}
             </Link>
+            <Link href="/investor-intelligence" className="text-[#2B2620] hover:text-[#C9A96A]">
+              Investor AI
+            </Link>
             <Link href="/about" className="text-[#2B2620] hover:text-[#C9A96A]">
               {t('about')}
             </Link>
@@ -181,6 +184,14 @@ export default function Header() {
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                       <span>Messages</span>
+                    </Link>
+                    <Link
+                      href="/investor-intelligence"
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+                      <span>Investor Intelligence</span>
                     </Link>
                     <Link
                       href="/profile"

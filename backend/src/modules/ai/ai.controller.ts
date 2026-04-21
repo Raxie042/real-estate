@@ -78,4 +78,50 @@ export class AIController {
     );
     return insights;
   }
+
+  /**
+   * Predict next high-growth property areas globally
+   */
+  @Get('global-growth-areas')
+  async getGlobalGrowthAreas(
+    @Query('limit') limit = 20,
+    @Query('minListings') minListings = 8,
+  ) {
+    return this.aiService.predictGlobalHighGrowthAreas(Number(limit), Number(minListings));
+  }
+
+  /**
+   * Compare investor ROI across countries
+   */
+  @Post('global-roi-compare')
+  async compareGlobalRoi(
+    @Body()
+    data: {
+      investmentAmount?: number;
+      holdingPeriodYears?: number;
+      targetCountries?: string[];
+      propertyType?: string;
+      listingType?: 'SALE' | 'RENT' | 'LEASE';
+    },
+  ) {
+    return this.aiService.compareGlobalRoi(data);
+  }
+
+  /**
+   * Automated off-market luxury deal finder
+   */
+  @Post('off-market-luxury-deals')
+  async findOffMarketLuxuryDeals(
+    @Body()
+    data: {
+      countries?: string[];
+      minPrice?: number;
+      maxPrice?: number;
+      minBedrooms?: number;
+      propertyTypes?: string[];
+      limit?: number;
+    },
+  ) {
+    return this.aiService.findOffMarketLuxuryDeals(data);
+  }
 }

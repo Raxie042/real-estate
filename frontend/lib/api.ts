@@ -228,6 +228,23 @@ export const api = {
     getMarketAnalysis: (city: string, state: string) => apiClient.get(`/ai/market-analysis/${city}/${state}`),
     predictPrice: (data: any) => apiClient.post('/ai/price-prediction', data),
     getNeighborhoodInsights: (params?: any) => apiClient.get('/ai/neighborhood-insights', { params }),
+    getGlobalGrowthAreas: (params?: { limit?: number; minListings?: number }) =>
+      apiClient.get('/ai/global-growth-areas', { params }),
+    compareGlobalRoi: (data?: {
+      investmentAmount?: number;
+      holdingPeriodYears?: number;
+      targetCountries?: string[];
+      propertyType?: string;
+      listingType?: 'SALE' | 'RENT' | 'LEASE';
+    }) => apiClient.post('/ai/global-roi-compare', data || {}),
+    getOffMarketLuxuryDeals: (data?: {
+      countries?: string[];
+      minPrice?: number;
+      maxPrice?: number;
+      minBedrooms?: number;
+      propertyTypes?: string[];
+      limit?: number;
+    }) => apiClient.post('/ai/off-market-luxury-deals', data || {}),
   },
 
   valuation: {
