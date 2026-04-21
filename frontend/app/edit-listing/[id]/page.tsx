@@ -45,6 +45,7 @@ export default function EditListingPage() {
   const [step, setStep] = useState(1);
   const [error, setError] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [geocodeError, setGeocodeError] = useState('');
   const [images, setImages] = useState<string[]>([]);
 
@@ -216,6 +217,36 @@ export default function EditListingPage() {
       ...prev,
       amenities: prev.amenities.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleGenerateDescription = async () => {
+    if (isGeneratingDescription) return;
+    if (!formData.title.trim()) {
+      setError('Enter a title before generating AI description');
+      return;
+    }
+
+    setIsGeneratingDescription(true);
+    setError('');
+    try {
+      const response = await api.ai.generateDescription({
+        title: formData.title,
+        bedrooms: Number(formData.bedrooms || 0),
+        bathrooms: Number(formData.bathrooms || 0),
+        squareFeet: Number(formData.squareFeet || 0),
+        yearBuilt: Number(formData.yearBuilt || new Date().getFullYear()),
+        features: formData.amenities,
+        neighborhood: [formData.city, formData.state].filter(Boolean).join(', '),
+      });
+
+      if (response.data?.description) {
+        setFormData((prev) => ({ ...prev, description: response.data.description }));
+      }
+    } catch (err) {
+      setError('Failed to generate AI description');
+    } finally {
+      setIsGeneratingDescription(false);
+    }
   };
 
 
@@ -414,6 +445,16 @@ export default function EditListingPage() {
                   className="lux-input"
                   placeholder="Describe your property..."
                 />
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={handleGenerateDescription}
+                    disabled={isGeneratingDescription}
+                    className="lux-button-outline disabled:opacity-50"
+                  >
+                    {isGeneratingDescription ? 'Generating...' : 'Regenerate with AI'}
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

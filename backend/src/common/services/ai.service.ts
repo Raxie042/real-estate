@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import axios from 'axios';
 
 /**
  * AI-powered features for real estate
@@ -24,11 +25,56 @@ export class AIService {
     neighborhood?: string;
   }): Promise<string> {
     try {
-      // Mock response until OpenAI SDK is integrated
-      return `Welcome to this beautiful ${listingData.bedrooms}-bedroom home. This ${listingData.squareFeet}-square-foot residence built in ${listingData.yearBuilt} features ${listingData.bathrooms} bathrooms and an array of modern amenities including ${listingData.features.slice(0, 3).join(', ')}. Perfect for families seeking comfort and style.`;
+      if (this.openaiApiKey) {
+        const prompt = [
+          `Write a compelling, concise real-estate listing description (120-180 words).`,
+          `Title: ${listingData.title}`,
+          `Bedrooms: ${listingData.bedrooms}`,
+          `Bathrooms: ${listingData.bathrooms}`,
+          `Square feet: ${listingData.squareFeet}`,
+          `Year built: ${listingData.yearBuilt}`,
+          `Features: ${listingData.features.join(', ')}`,
+          `Neighborhood: ${listingData.neighborhood || 'N/A'}`,
+          `Tone: professional, premium, factual, no emoji.`,
+        ].join('\n');
+
+        const response = await axios.post(
+          'https://api.openai.com/v1/chat/completions',
+          {
+            model: 'gpt-4o-mini',
+            messages: [
+              {
+                role: 'system',
+                content: 'You write high-converting property listing copy for real-estate platforms.',
+              },
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            temperature: 0.6,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${this.openaiApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            timeout: 12000,
+          },
+        );
+
+        const generated = response.data?.choices?.[0]?.message?.content?.trim();
+        if (generated) {
+          return generated;
+        }
+      }
+
+      // Fallback generation when OpenAI key is not configured.
+      const topFeatures = listingData.features.slice(0, 4).join(', ');
+      return `${listingData.title} is a thoughtfully designed ${listingData.bedrooms}-bedroom, ${listingData.bathrooms}-bathroom home spanning approximately ${listingData.squareFeet} square feet. Built in ${listingData.yearBuilt}, this property blends timeless character with practical comfort for modern living. Highlights include ${topFeatures || 'well-planned interiors and functional spaces'}, offering flexibility for families, professionals, or investors. ${listingData.neighborhood ? `Located in ${listingData.neighborhood},` : 'Situated in a sought-after area,'} the home is close to everyday amenities, commuter routes, and lifestyle conveniences. With strong long-term value and move-in-ready appeal, this residence is an excellent opportunity for buyers seeking quality, location, and livability.`;
     } catch (error) {
       console.error('AI description generation failed:', error);
-      return '';
+      return `${listingData.title} is a ${listingData.bedrooms}-bedroom, ${listingData.bathrooms}-bathroom property with approximately ${listingData.squareFeet} square feet of interior space. Built in ${listingData.yearBuilt}, it offers practical layout, modern comfort, and standout features such as ${listingData.features.slice(0, 3).join(', ') || 'quality finishes'}.`;
     }
   }
 
@@ -52,20 +98,30 @@ export class AIService {
 
     // Combine filters from all saved searches
     const searches = savedSearches.map((s) => s.filters as any);
-    const avgPrice = searches.reduce((sum, s) => sum + (s.priceMax || 0), 0) / searches.length;
+    const validPriceCaps = searches
+      .map((s) => Number(s.priceMax || s.maxPrice || 0))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    const avgPrice = validPriceCaps.length
+      ? validPriceCaps.reduce((sum, value) => sum + value, 0) / validPriceCaps.length
+      : 0;
     const preferredBeds = Math.round(
-      searches.reduce((sum, s) => sum + (s.bedrooms || 0), 0) / searches.length,
+      searches.reduce((sum, s) => sum + Number(s.bedrooms || s.minBedrooms || 0), 0) /
+        searches.length,
     );
-    const preferredTypes = [...new Set(searches.flatMap((s) => s.propertyTypes || []))];
+    const preferredTypes = [...new Set(searches.flatMap((s) => s.propertyTypes || s.types || []))];
 
     // Find matching properties with scoring
     const properties = await this.prisma.listing.findMany({
       where: {
         status: 'ACTIVE',
-        price: {
-          gte: avgPrice * 0.8,
-          lte: avgPrice * 1.2,
-        },
+        ...(avgPrice
+          ? {
+              price: {
+                gte: avgPrice * 0.8,
+                lte: avgPrice * 1.2,
+              },
+            }
+          : {}),
         ...(preferredBeds && { bedrooms: { gte: preferredBeds - 1, lte: preferredBeds + 1 } }),
         ...(preferredTypes.length && { propertyType: { in: preferredTypes } }),
       },
@@ -92,24 +148,31 @@ export class AIService {
       const filters = search.filters;
 
       // Price match
-      if (property.price >= filters.priceMin && property.price <= filters.priceMax) {
+      const minPrice = Number(filters.priceMin || filters.minPrice || 0);
+      const maxPrice = Number(filters.priceMax || filters.maxPrice || 0);
+      const hasPriceRange = minPrice > 0 && maxPrice > 0;
+      if (hasPriceRange && property.price >= minPrice && property.price <= maxPrice) {
         score += 30;
       }
 
       // Bedroom match
-      if (filters.bedrooms && property.bedrooms >= filters.bedrooms) {
+      const targetBedrooms = Number(filters.bedrooms || filters.minBedrooms || 0);
+      if (targetBedrooms && property.bedrooms >= targetBedrooms) {
         score += 20;
       }
 
       // Property type match
-      if (filters.propertyTypes?.includes(property.propertyType)) {
+      const types = filters.propertyTypes || filters.types || [];
+      if (types.includes(property.propertyType)) {
         score += 25;
       }
 
       // Amenity match
-      if (filters.amenities?.length) {
-        const amenitiesMatch = filters.amenities.filter((a: string) =>
-          property.features?.includes(a),
+      const amenities = filters.amenities || [];
+      if (amenities.length) {
+        const listingFeatures = Array.isArray(property.features) ? property.features : [];
+        const amenitiesMatch = amenities.filter((a: string) =>
+          listingFeatures.includes(a),
         ).length;
         score += amenitiesMatch * 5;
       }
@@ -284,13 +347,15 @@ export class AIService {
     const avgBeds =
       nearby.length > 0 ? nearby.reduce((sum, p) => sum + (p.bedrooms ?? 0), 0) / nearby.length : 0;
 
+    const prices = nearby.map((p) => Number(p.price));
+
     return {
       propertiesNearby: nearby.length,
       averagePrice: Math.round(avgPrice),
       averageBedrooms: Math.round(avgBeds * 10) / 10,
       priceRange: {
-        low: Math.round(Math.min(...nearby.map((p) => Number(p.price)))),
-        high: Math.round(Math.max(...nearby.map((p) => Number(p.price)))),
+        low: prices.length ? Math.round(Math.min(...prices)) : 0,
+        high: prices.length ? Math.round(Math.max(...prices)) : 0,
       },
     };
   }

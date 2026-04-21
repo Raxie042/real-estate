@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
+import { AppController } from './app.controller';
 
 // Modules
 import { DatabaseModule } from './database/database.module';
@@ -29,8 +30,10 @@ import { RentalModule } from './modules/rental/rental.module';
 import { AIModule } from './modules/ai/ai.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
+import { WhiteLabelModule } from './modules/white-label/white-label.module';
 
 @Module({
+  controllers: [AppController],
   imports: [
     // Configuration
     ConfigModule.forRoot({
@@ -81,6 +84,7 @@ import { InvitationsModule } from './modules/invitations/invitations.module';
     AIModule,
     ReviewsModule,
     InvitationsModule,
+    WhiteLabelModule,
   ],
   providers: [
     {

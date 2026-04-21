@@ -39,12 +39,7 @@ export class MlsController {
    */
   @Get('sync-history')
   async getSyncHistory(@Query('limit') limit = 10, @Query('offset') offset = 0) {
-    return {
-      syncs: [],
-      total: 0,
-      limit,
-      offset,
-    };
+    return this.mlsService.getSyncHistory(limit, offset);
   }
 
   /**
@@ -52,12 +47,7 @@ export class MlsController {
    */
   @Get('sync-status/:listingId')
   async getSyncStatus(@Param('listingId') listingId: string) {
-    return {
-      listingId,
-      syncStatus: 'SUCCESS',
-      lastSyncedAt: new Date(),
-      lastError: null,
-    };
+    return this.mlsService.getSyncStatus(listingId);
   }
 
   /**

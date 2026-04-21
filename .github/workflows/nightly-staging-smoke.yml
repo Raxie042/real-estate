@@ -31,18 +31,28 @@ jobs:
         with:
           node-version: 20
 
+      - name: Initialize smoke artifacts
+        run: |
+          touch smoke-output.log
+          touch staging-smoke-summary.md
+
       - name: Validate staging URLs
+        id: validate
+        continue-on-error: true
         run: |
           if [ -z "$SMOKE_FRONTEND_URL" ] || [ -z "$SMOKE_API_URL" ]; then
-            echo "Missing staging URL configuration."
-            echo "Set STAGING_FRONTEND_URL and STAGING_API_URL repo secrets, or pass workflow_dispatch inputs."
+            echo "Missing staging URL configuration." | tee -a smoke-output.log
+            echo "Set STAGING_FRONTEND_URL and STAGING_API_URL repo secrets, or pass workflow_dispatch inputs." | tee -a smoke-output.log
+            echo "exit_code=1" >> $GITHUB_OUTPUT
             exit 1
           fi
-          echo "Frontend: $SMOKE_FRONTEND_URL"
-          echo "API: $SMOKE_API_URL"
+          echo "Frontend: $SMOKE_FRONTEND_URL" | tee -a smoke-output.log
+          echo "API: $SMOKE_API_URL" | tee -a smoke-output.log
+          echo "exit_code=0" >> $GITHUB_OUTPUT
 
       - name: Run smoke E2E against staging
         id: smoke
+        if: steps.validate.outputs.exit_code == '0'
         continue-on-error: true
         run: |
           set -o pipefail
@@ -52,17 +62,28 @@ jobs:
       - name: Create run summary
         if: always()
         run: |
+          RESULT="PASS ✅"
+          if [ "${{ steps.validate.outputs.exit_code }}" != "0" ]; then
+            RESULT="CONFIG FAIL ❌"
+          elif [ "${{ steps.smoke.outputs.exit_code }}" != "0" ]; then
+            RESULT="FAIL ❌"
+          fi
+
           {
             echo "# Nightly Staging Smoke Summary"
             echo ""
             echo "- Frontend URL: $SMOKE_FRONTEND_URL"
             echo "- API URL: $SMOKE_API_URL"
-            echo "- Result: ${{ steps.smoke.outputs.exit_code == '0' && 'PASS ✅' || 'FAIL ❌' }}"
+            echo "- Result: $RESULT"
             echo "- Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             echo ""
             echo "## Smoke Output"
             echo '```'
-            cat smoke-output.log
+            if [ -f smoke-output.log ]; then
+              cat smoke-output.log
+            else
+              echo "No smoke output was captured."
+            fi
             echo '```'
           } > staging-smoke-summary.md
 
@@ -79,6 +100,6 @@ jobs:
         if: always()
         run: cat staging-smoke-summary.md >> $GITHUB_STEP_SUMMARY
 
-      - name: Fail workflow if smoke failed
-        if: steps.smoke.outputs.exit_code != '0'
+      - name: Fail workflow if validation or smoke failed
+        if: steps.validate.outputs.exit_code != '0' || steps.smoke.outputs.exit_code != '0'
         run: exit 1

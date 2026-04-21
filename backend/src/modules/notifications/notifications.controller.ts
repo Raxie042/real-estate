@@ -9,22 +9,22 @@ export class NotificationsController {
 
   @Get()
   async getNotifications(@Request() req, @Body('unreadOnly') unreadOnly?: boolean) {
-    return this.notificationsService.getNotifications(req.user.userId, unreadOnly);
+    return this.notificationsService.getNotifications(req.user.id, unreadOnly);
   }
 
   @Get('unread')
   async getUnreadNotifications(@Request() req) {
-    return this.notificationsService.getNotifications(req.user.userId, true);
+    return this.notificationsService.getNotifications(req.user.id, true);
   }
 
   @Put(':id/read')
   async markAsRead(@Param('id') id: string, @Request() req) {
-    return this.notificationsService.markAsRead(id, req.user.userId);
+    return this.notificationsService.markAsRead(id, req.user.id);
   }
 
   @Put('read-all')
   async markAllAsRead(@Request() req) {
-    await this.notificationsService.markAllAsRead(req.user.userId);
+    await this.notificationsService.markAllAsRead(req.user.id);
     return { success: true };
   }
 }

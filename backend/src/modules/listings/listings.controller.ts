@@ -16,6 +16,9 @@ import {
 import { ListingReportStatus } from '@prisma/client';
 import { ListingsService } from './listings.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { PLATFORM_ADMIN_ROLES } from '../auth/constants/roles.constants';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EmailService } from '../../common/services/email.service';
 import { CRMService } from '../../common/services/crm.service';
@@ -28,12 +31,6 @@ export class ListingsController {
     private emailService: EmailService,
     private crmService: CRMService,
   ) {}
-
-  private ensureAdmin(req: any) {
-    if (req.user.role !== 'ADMIN' && req.user.role !== 'PLATFORM_ADMIN') {
-      throw new ForbiddenException('Admin access required');
-    }
-  }
 
   @Get()
   async findAll(@Query() query: any) {
@@ -92,9 +89,9 @@ export class ListingsController {
   }
 
   @Get('admin/reports/queue')
-  @UseGuards(JwtAuthGuard)
-  async getReportsQueue(@Request() req, @Query() query: any) {
-    this.ensureAdmin(req);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...PLATFORM_ADMIN_ROLES)
+  async getReportsQueue(@Query() query: any) {
 
     const status = (query.status || 'PENDING').toUpperCase() as ListingReportStatus;
 
@@ -106,7 +103,8 @@ export class ListingsController {
   }
 
   @Post('admin/reports/:reportId/review')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...PLATFORM_ADMIN_ROLES)
   async reviewReport(
     @Param('reportId') reportId: string,
     @Request() req,
@@ -118,8 +116,6 @@ export class ListingsController {
       suspendListing?: boolean;
     },
   ) {
-    this.ensureAdmin(req);
-
     if (!['RESOLVED', 'REJECTED'].includes(data.decision)) {
       throw new BadRequestException('Decision must be RESOLVED or REJECTED');
     }
@@ -160,14 +156,13 @@ export class ListingsController {
   }
 
   @Put(':id/verification')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...PLATFORM_ADMIN_ROLES)
   async setListingVerification(
     @Param('id') id: string,
     @Request() req,
     @Body() data: { isVerified: boolean },
   ) {
-    this.ensureAdmin(req);
-
     if (typeof data.isVerified !== 'boolean') {
       throw new BadRequestException('isVerified must be a boolean');
     }

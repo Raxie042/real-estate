@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { useWhiteLabel } from '@/lib/white-label-context';
 
 export default function Footer() {
   const t = useTranslations('Footer');
+  const { config } = useWhiteLabel();
 
   return (
     <footer className="bg-[#15120D] text-[#F4EFE8] border-t border-[#2A231A]">
@@ -100,7 +102,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-[#2A231A] mt-8 pt-8 text-center text-[#B9AA98]">
-          <p>&copy; {new Date().getFullYear()} Raxie Zenith Estate. {t('rightsReserved')}</p>
+          <p>&copy; {new Date().getFullYear()} {config.brandName}. {t('rightsReserved')}</p>
         </div>
       </div>
     </footer>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { api } from '@/lib/api';
 
 export default function ValuationCalculator() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,8 @@ export default function ValuationCalculator() {
     longitude: 0,
   });
   const [valuation, setValuation] = useState<any>(null);
+  const [aiPrediction, setAiPrediction] = useState<any>(null);
+  const [marketAnalysis, setMarketAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,13 +27,22 @@ export default function ValuationCalculator() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/valuation/estimate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const data = await response.json();
-      setValuation(data);
+      const [valuationRes, aiPredictionRes, marketAnalysisRes] = await Promise.all([
+        api.valuation.estimateValue(formData),
+        api.ai.predictPrice({
+          bedrooms: formData.bedrooms,
+          bathrooms: formData.bathrooms,
+          squareFeet: formData.squareFeet,
+          yearBuilt: formData.yearBuilt,
+          city: formData.city,
+          state: formData.state,
+        }),
+        api.ai.getMarketAnalysis(formData.city, formData.state),
+      ]);
+
+      setValuation(valuationRes.data);
+      setAiPrediction(aiPredictionRes.data);
+      setMarketAnalysis(marketAnalysisRes.data);
     } catch (error) {
       console.error('Failed to get valuation:', error);
       alert('Failed to calculate valuation. Please try again.');
@@ -276,6 +288,71 @@ export default function ValuationCalculator() {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {aiPrediction && (
+            <div className="border border-[#E8E1D7] rounded-lg p-6 bg-[#FBF8F3]">
+              <h4 className="font-semibold text-lg mb-3 text-[#1C1A17]">AI Price Prediction</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <div className="text-sm text-[#7A6E60]">Predicted Price</div>
+                  <div className="text-2xl font-bold text-[#1C1A17]">
+                    ${Number(aiPrediction.prediction || 0).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-[#7A6E60]">Low - High Range</div>
+                  <div className="text-lg font-semibold text-[#1C1A17]">
+                    ${Number(aiPrediction.range?.low || 0).toLocaleString()} - ${Number(aiPrediction.range?.high || 0).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-[#7A6E60]">Confidence</div>
+                  <div className="text-2xl font-bold text-[#1C1A17]">
+                    {Number(aiPrediction.confidence || 0)}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {marketAnalysis && (
+            <div className="border border-[#E8E1D7] rounded-lg p-6 bg-white">
+              <h4 className="font-semibold text-lg mb-3 text-[#1C1A17]">Local Market Analysis</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <div className="text-sm text-[#7A6E60]">Listings</div>
+                  <div className="text-xl font-bold text-[#1C1A17]">{marketAnalysis.totalListings ?? 0}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-[#7A6E60]">Avg Price</div>
+                  <div className="text-xl font-bold text-[#1C1A17]">
+                    ${Number(marketAnalysis.averagePrice || 0).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-[#7A6E60]">$/Sq Ft</div>
+                  <div className="text-xl font-bold text-[#1C1A17]">${marketAnalysis.pricePerSquareFoot ?? 0}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-[#7A6E60]">Trend (30d)</div>
+                  <div className="text-xl font-bold text-[#1C1A17]">
+                    {marketAnalysis.marketTrend} ({marketAnalysis.trend30Days}%)
+                  </div>
+                </div>
+              </div>
+
+              {Array.isArray(marketAnalysis.insights) && marketAnalysis.insights.length > 0 && (
+                <ul className="space-y-2 text-[#5F5448]">
+                  {marketAnalysis.insights.map((insight: string, idx: number) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#C9A96A]" />
+                      <span>{insight}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </div>

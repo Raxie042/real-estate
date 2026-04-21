@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   Patch,
   Post,
@@ -12,6 +11,9 @@ import {
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { PLATFORM_ADMIN_ROLES } from '../auth/constants/roles.constants';
 import { CreateInvitationApplicationDto } from './dto/create-invitation-application.dto';
 import { InvitationStatusDto, UpdateInvitationStatusDto } from './dto/update-invitation-status.dto';
 import { InvitationsService } from './invitations.service';
@@ -27,34 +29,25 @@ export class InvitationsController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...PLATFORM_ADMIN_ROLES)
   async getApplications(
     @Query('status') status?: InvitationStatusDto,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
-    @Request() req?: any,
   ) {
-    const isAdmin = req?.user?.role === 'PLATFORM_ADMIN' || req?.user?.role === 'ADMIN';
-    if (!isAdmin) {
-      throw new ForbiddenException('Admin access required');
-    }
-
     return this.invitationsService.listApplications({ status, page, limit });
   }
 
   @Patch(':id/status')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...PLATFORM_ADMIN_ROLES)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   async updateStatus(
     @Param('id') id: string,
     @Body() body: UpdateInvitationStatusDto,
     @Request() req: any,
   ) {
-    const isAdmin = req?.user?.role === 'PLATFORM_ADMIN' || req?.user?.role === 'ADMIN';
-    if (!isAdmin) {
-      throw new ForbiddenException('Admin access required');
-    }
-
     return this.invitationsService.updateApplicationStatus(
       id,
       body.status,

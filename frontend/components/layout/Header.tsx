@@ -7,9 +7,11 @@ import { useAuth } from '@/lib/auth-context';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import PreferencesPanel from '@/components/layout/PreferencesPanel';
 import { useTranslations } from 'next-intl';
+import { useWhiteLabel } from '@/lib/white-label-context';
 
 export default function Header() {
   const t = useTranslations('Header');
+  const { config } = useWhiteLabel();
   const { user, isAuthenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -76,8 +78,12 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
+            {config.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={config.logoUrl} alt={config.brandName} className="h-9 w-auto object-contain" />
+            ) : null}
             <div className="text-2xl font-semibold tracking-wide text-[#1C1A17] lux-heading">
-              <span>Raxie Zenith Estate</span>
+              <span>{config.brandName}</span>
             </div>
           </Link>
 

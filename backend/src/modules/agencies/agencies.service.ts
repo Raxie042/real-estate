@@ -5,6 +5,103 @@ import { PrismaService } from '../../database/prisma.service';
 export class AgenciesService {
   constructor(private prisma: PrismaService) {}
 
+  async getTeamOverview(agencyId: string) {
+    const [agency, activeListings, offers, openTasks] = await Promise.all([
+      this.prisma.agency.findUnique({
+        where: { id: agencyId },
+        include: {
+          agents: {
+            where: { deletedAt: null },
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              role: true,
+              createdAt: true,
+            },
+          },
+        },
+      }),
+      this.prisma.listing.count({ where: { agencyId, status: 'ACTIVE' } }),
+      this.prisma.offer.count({ where: { listing: { agencyId } } }),
+      this.prisma.task.count({ where: { agent: { agencyId }, status: { in: ['PENDING', 'IN_PROGRESS'] } } }),
+    ]);
+
+    return {
+      agency,
+      summary: {
+        activeListings,
+        offers,
+        openTasks,
+      },
+    };
+  }
+
+  async getAgentMetrics(agencyId: string) {
+    const agents = await this.prisma.user.findMany({
+      where: {
+        agencyId,
+        role: { in: ['AGENT', 'AGENCY_ADMIN'] },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
+    });
+
+    const results = await Promise.all(
+      agents.map(async (agent) => {
+        const [listings, acceptedOffers, openTasks] = await Promise.all([
+          this.prisma.listing.count({ where: { userId: agent.id, deletedAt: null } }),
+          this.prisma.offer.count({ where: { listing: { userId: agent.id }, status: 'ACCEPTED' } }),
+          this.prisma.task.count({ where: { agentId: agent.id, status: { in: ['PENDING', 'IN_PROGRESS'] } } }),
+        ]);
+
+        return {
+          ...agent,
+          metrics: {
+            listings,
+            acceptedOffers,
+            openTasks,
+          },
+        };
+      }),
+    );
+
+    return results;
+  }
+
+  async assignListing(agencyId: string, listingId: string, agentId: string) {
+    const agent = await this.prisma.user.findFirst({
+      where: {
+        id: agentId,
+        agencyId,
+        role: { in: ['AGENT', 'AGENCY_ADMIN'] },
+      },
+      select: { id: true },
+    });
+
+    if (!agent) {
+      throw new Error('Agent not found in this agency');
+    }
+
+    return this.prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        agencyId,
+        userId: agentId,
+      },
+      include: {
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+      },
+    });
+  }
+
   async findAll() {
     return this.prisma.agency.findMany({
       where: { deletedAt: null },

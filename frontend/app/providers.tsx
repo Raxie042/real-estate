@@ -11,6 +11,7 @@ import { messagesByLanguage } from '@/lib/messages';
 import { usePathname } from 'next/navigation';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import TelemetryProvider from '@/components/TelemetryProvider';
+import { WhiteLabelProvider } from '@/lib/white-label-context';
 
 function IntlBridge({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -48,15 +49,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
         <PreferencesProvider>
-          <ErrorBoundary>
-            <TelemetryProvider>
-              <IntlBridge>
-                <AuthProvider>
-                  {children}
-                </AuthProvider>
-              </IntlBridge>
-            </TelemetryProvider>
-          </ErrorBoundary>
+          <WhiteLabelProvider>
+            <ErrorBoundary>
+              <TelemetryProvider>
+                <IntlBridge>
+                  <AuthProvider>
+                    {children}
+                  </AuthProvider>
+                </IntlBridge>
+              </TelemetryProvider>
+            </ErrorBoundary>
+          </WhiteLabelProvider>
         </PreferencesProvider>
       </ToastProvider>
     </QueryClientProvider>

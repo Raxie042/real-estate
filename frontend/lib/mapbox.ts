@@ -1,4 +1,11 @@
-const INVALID_TOKEN_HINTS = ['your_mapbox', 'your-token', 'placeholder', 'changeme'];
+const INVALID_TOKEN_HINTS = [
+  'your_mapbox',
+  'your-token',
+  'placeholder',
+  'changeme',
+  'pk_test_token_example',
+  'test_token_example',
+];
 
 export function getValidMapboxPublicToken(rawToken?: string): string | null {
   const token = (rawToken || '').trim();

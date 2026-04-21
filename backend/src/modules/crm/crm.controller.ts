@@ -1,10 +1,14 @@
 import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { CRM_ACCESS_ROLES } from '../auth/constants/roles.constants';
 import { CRMService } from '../../common/services/crm.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
 @Controller('crm')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(...CRM_ACCESS_ROLES)
 export class CrmController {
   constructor(
     private crmService: CRMService,
@@ -17,6 +21,11 @@ export class CrmController {
   @Get('metrics')
   async getCrmMetrics(@Request() req) {
     return this.crmService.getCRMMetrics(req.user.id);
+  }
+
+  @Get('dashboard')
+  async getAdvancedDashboard(@Request() req) {
+    return this.crmService.getAdvancedDashboard(req.user.id);
   }
 
   /**

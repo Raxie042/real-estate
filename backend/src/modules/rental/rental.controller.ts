@@ -22,14 +22,14 @@ export class RentalController {
       moveInDate: Date;
     },
   ) {
-    return {
-      success: true,
-      tenantId: 'tenant_' + Date.now(),
+    return this.rentalService.createTenant({
+      propertyId: data.propertyId,
       firstName: data.firstName,
       lastName: data.lastName,
-      propertyId: data.propertyId,
-      status: 'ACTIVE',
-    };
+      email: data.email,
+      phone: data.phone,
+      moveInDate: String(data.moveInDate),
+    });
   }
 
   /**
@@ -37,7 +37,7 @@ export class RentalController {
    */
   @Put('tenant/:tenantId')
   async updateTenant(@Param('tenantId') tenantId: string, @Body() data: any) {
-    return { success: true, tenantId, updatedFields: Object.keys(data || {}) };
+    return this.rentalService.updateTenant(tenantId, data);
   }
 
   /**
@@ -56,14 +56,15 @@ export class RentalController {
       terms?: string;
     },
   ) {
-    return {
-      success: true,
-      leaseId: 'lease_' + Date.now(),
+    return this.rentalService.createLease({
       tenantId: data.tenantId,
       propertyId: data.propertyId,
+      startDate: String(data.startDate),
+      endDate: String(data.endDate),
       monthlyRent: data.monthlyRent,
-      status: 'ACTIVE',
-    };
+      securityDeposit: data.securityDeposit,
+      terms: data.terms,
+    });
   }
 
   /**
@@ -80,13 +81,13 @@ export class RentalController {
       notes?: string;
     },
   ) {
-    return {
-      success: true,
-      paymentId: 'payment_' + Date.now(),
+    return this.rentalService.recordRentPayment({
       leaseId: data.leaseId,
+      tenantId: data.tenantId,
       amount: data.amount,
-      status: 'RECORDED',
-    };
+      dueDate: String(data.paidDate),
+      paidDate: String(data.paidDate),
+    });
   }
 
   /**
@@ -136,16 +137,7 @@ export class RentalController {
       category: string;
     },
   ) {
-    return {
-      id: 'mx-001',
-      propertyId: data.propertyId,
-      tenantId: data.tenantId,
-      title: data.title,
-      description: data.description,
-      priority: data.priority || 'NORMAL',
-      category: data.category,
-      status: 'OPEN',
-    };
+    return this.rentalService.createMaintenanceRequest(data);
   }
 
   /**
@@ -153,7 +145,7 @@ export class RentalController {
    */
   @Get('property/:propertyId/maintenance-requests')
   async getMaintenanceRequests(@Param('propertyId') propertyId: string) {
-    return { propertyId, requests: [] };
+    return this.rentalService.getMaintenanceRequests(propertyId);
   }
 
   /**
@@ -164,7 +156,7 @@ export class RentalController {
     @Param('requestId') requestId: string,
     @Body() data: { status: string },
   ) {
-    return { success: true, requestId, status: data.status };
+    return this.rentalService.updateMaintenanceRequest(requestId, data);
   }
 
   /**
@@ -172,7 +164,7 @@ export class RentalController {
    */
   @Get('lease/:leaseId')
   async getLeaseById(@Param('leaseId') leaseId: string) {
-    return { leaseId, status: 'ACTIVE' };
+    return this.rentalService.getLease(leaseId);
   }
 
   /**
@@ -180,6 +172,6 @@ export class RentalController {
    */
   @Get('property/:propertyId/leases')
   async getPropertyLeases(@Param('propertyId') propertyId: string) {
-    return { propertyId, leases: [] };
+    return this.rentalService.getPropertyLeases(propertyId);
   }
 }

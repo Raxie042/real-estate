@@ -13,6 +13,14 @@ import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { AppleAuthGuard } from './guards/apple-auth.guard';
 import { UsersModule } from '../users/users.module';
 
+const hasGoogleOAuthConfig =
+  !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+const hasAppleOAuthConfig =
+  !!process.env.APPLE_CLIENT_ID &&
+  !!process.env.APPLE_TEAM_ID &&
+  !!process.env.APPLE_KEY_ID &&
+  !!process.env.APPLE_PRIVATE_KEY;
+
 @Module({
   imports: [
     UsersModule,
@@ -33,8 +41,8 @@ import { UsersModule } from '../users/users.module';
     AuthService,
     JwtStrategy,
     LocalStrategy,
-    GoogleStrategy,
-    AppleOauthStrategy,
+    ...(hasGoogleOAuthConfig ? [GoogleStrategy] : []),
+    ...(hasAppleOAuthConfig ? [AppleOauthStrategy] : []),
     GoogleAuthGuard,
     AppleAuthGuard,
   ],

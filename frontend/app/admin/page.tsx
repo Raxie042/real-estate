@@ -129,6 +129,9 @@ export default function AdminDashboard() {
             <Link href="/admin/reports" className="lux-button-outline inline-flex ml-3">
               Moderate Listing Reports
             </Link>
+            <Link href="/admin/enterprise" className="lux-button inline-flex ml-3">
+              Enterprise Console
+            </Link>
           </div>
         </div>
 

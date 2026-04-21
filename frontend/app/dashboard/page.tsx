@@ -9,20 +9,13 @@ import SectionBoundary from '@/components/layout/SectionBoundary';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  useEffect(() => {
-    alert('Dashboard page loaded!');
-    if (user) {
-      // Strong debug log for troubleshooting role issues
-      console.warn('=== DASHBOARD USER DEBUG ===', user);
-      console.warn('=== DASHBOARD USER ROLE ===', user.role, typeof user.role);
-    }
-  }, [user]);
 
   // State for dynamic stats
   const [stats, setStats] = useState<any>({});
   const [displayStats, setDisplayStats] = useState<any>({});
   const animationRef = useRef<any>(null);
   const [activity, setActivity] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,21 +42,24 @@ export default function DashboardPage() {
           });
           setActivity([]); // Optionally fetch agent activity
         } else {
-          const [favorites, offers, messages] = await Promise.all([
+          const [favorites, offers, messages, aiRecommendations] = await Promise.all([
             api.favorites.getAll(),
             api.offers.getAll(),
             api.chat.getRooms(),
+            api.ai.getRecommendations(user.id, 6),
           ]);
           setStats({
             favorites: favorites.data.length,
             offers: offers.data.length,
             messages: messages.data.length,
           });
+          setRecommendations(aiRecommendations.data?.properties || []);
           setActivity([]); // Optionally fetch buyer activity
         }
       } catch {
         setStats({});
         setActivity([]);
+        setRecommendations([]);
       }
       setLoading(false);
     };
@@ -251,6 +247,37 @@ export default function DashboardPage() {
       <SectionBoundary sectionName="Dashboard analytics">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <OffersChart />
+        </div>
+      </SectionBoundary>
+      <SectionBoundary sectionName="AI recommendations">
+        <div className="lux-card p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-2">AI Recommendations For You</h2>
+          {recommendations.length === 0 ? (
+            <p className="text-[#7A6E60]">No recommendations yet. Save searches and favorite listings to improve suggestions.</p>
+          ) : (
+            <div className="space-y-3">
+              {recommendations.slice(0, 6).map((listing: any) => (
+                <Link
+                  key={listing.id}
+                  href={`/properties/${listing.id}`}
+                  className="block p-4 rounded-lg border border-[#E8E1D7] hover:border-[#C9A96A] transition"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="font-semibold text-[#1C1A17]">{listing.title}</div>
+                      <div className="text-sm text-[#7A6E60]">{[listing.city, listing.state].filter(Boolean).join(', ')}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold text-[#1C1A17]">${Number(listing.price || 0).toLocaleString()}</div>
+                      {typeof listing.score === 'number' && (
+                        <div className="text-xs text-[#7A6E60]">Match score: {listing.score}</div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </SectionBoundary>
       <SectionBoundary sectionName="Recent activity">

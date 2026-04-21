@@ -95,6 +95,10 @@ export const api = {
     getAll: () => apiClient.get('/agencies'),
     getById: (id: string) => apiClient.get(`/agencies/${id}`),
     getReviews: (id: string) => apiClient.get(`/agencies/${id}/reviews`),
+    getTeamOverview: (id: string) => apiClient.get(`/agencies/${id}/team-overview`),
+    getAgentMetrics: (id: string) => apiClient.get(`/agencies/${id}/agent-metrics`),
+    assignListing: (id: string, data: { listingId: string; agentId: string }) =>
+      apiClient.post(`/agencies/${id}/assign-listing`, data),
   },
 
   notifications: {
@@ -106,6 +110,7 @@ export const api = {
 
   analytics: {
     getDashboard: () => apiClient.get('/analytics/dashboard'),
+    getPerformance: () => apiClient.get('/analytics/performance'),
   },
 
   savedSearches: {
@@ -188,6 +193,7 @@ export const api = {
   },
 
   crm: {
+    getDashboard: () => apiClient.get('/crm/dashboard'),
     getMetrics: (agentId?: string) => apiClient.get('/crm/metrics', { params: { agentId } }),
     calculateLeadScore: (userId: string) => apiClient.post('/crm/lead-score', { userId }),
     getFollowUpSequence: (userId: string) => apiClient.post('/crm/follow-up-sequence', { userId }),
@@ -217,7 +223,8 @@ export const api = {
 
   ai: {
     generateDescription: (data: any) => apiClient.post('/ai/generate-description', data),
-    getRecommendations: (userId: string) => apiClient.get(`/ai/recommendations/${userId}`),
+    getRecommendations: (userId: string, limit = 10) =>
+      apiClient.get(`/ai/recommendations/${userId}`, { params: { limit } }),
     getMarketAnalysis: (city: string, state: string) => apiClient.get(`/ai/market-analysis/${city}/${state}`),
     predictPrice: (data: any) => apiClient.post('/ai/price-prediction', data),
     getNeighborhoodInsights: (params?: any) => apiClient.get('/ai/neighborhood-insights', { params }),
@@ -246,6 +253,20 @@ export const api = {
     getCrimeData: (zipCode: string) => apiClient.get(`/neighborhood/crime/${zipCode}`),
     getSchools: (location: string) => apiClient.get('/neighborhood/schools', { params: { location } }),
     getAmenities: (location: string) => apiClient.get('/neighborhood/amenities', { params: { location } }),
+  },
+
+  whiteLabel: {
+    getPublic: (agencyId?: string) => apiClient.get('/white-label/public', { params: { agencyId } }),
+    getAdmin: (agencyId?: string) => apiClient.get('/white-label/admin', { params: { agencyId } }),
+    updateAdmin: (data: {
+      brandName?: string;
+      logoUrl?: string;
+      primaryColor?: string;
+      accentColor?: string;
+      supportEmail?: string;
+      customDomain?: string;
+      agencyId?: string;
+    }) => apiClient.post('/white-label/admin', data),
   },
 };
 

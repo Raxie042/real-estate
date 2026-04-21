@@ -9,6 +9,57 @@ import { PrismaService } from '../../database/prisma.service';
 export class MlsService {
   constructor(private prisma: PrismaService) {}
 
+  async getSyncHistory(limit = 10, offset = 0) {
+    const [syncs, total] = await Promise.all([
+      this.prisma.mLSSync.findMany({
+        orderBy: { lastSyncedAt: 'desc' },
+        take: Number(limit),
+        skip: Number(offset),
+        include: { listing: { select: { id: true, title: true } } },
+      }),
+      this.prisma.mLSSync.count(),
+    ]);
+    return { syncs, total, limit, offset };
+  }
+
+  async getSyncStatus(listingId: string) {
+    const sync = await this.prisma.mLSSync.findFirst({
+      where: { listingId },
+      orderBy: { lastSyncedAt: 'desc' },
+    });
+    if (!sync) return { listingId, syncStatus: 'NEVER_SYNCED', lastSyncedAt: null, lastError: null };
+    return {
+      listingId,
+      syncStatus: sync.syncStatus,
+      lastSyncedAt: sync.lastSyncedAt,
+      lastError: sync.errorMessage,
+    };
+  }
+
+  async recordSync(data: {
+    listingId?: string;
+    mlsNumber: string;
+    source: string;
+    syncStatus: string;
+    errorMessage?: string;
+  }) {
+    return this.prisma.mLSSync.upsert({
+      where: { mlsNumber: data.mlsNumber },
+      create: {
+        listingId: data.listingId,
+        mlsNumber: data.mlsNumber,
+        source: data.source,
+        syncStatus: data.syncStatus,
+        errorMessage: data.errorMessage,
+      },
+      update: {
+        syncStatus: data.syncStatus,
+        errorMessage: data.errorMessage,
+        listingId: data.listingId,
+      },
+    });
+  }
+
   /**
    * RESO Web API adapter
    * Fetch and normalize listings from RESO-compliant MLS

@@ -1,24 +1,10 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
-
-interface Notification {
-  id: string;
-  userId: string;
-  type: string;
-  title: string;
-  message: string;
-  data?: any;
-  isRead?: boolean;
-  readAt?: Date;
-  createdAt: Date;
-}
+import { Injectable } from '@nestjs/common';
+import { NotificationType } from '@prisma/client';
+import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
 export class NotificationsService {
-  private notifications: Map<string, Notification[]> = new Map();
-
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  constructor(private prisma: PrismaService) {}
 
   async sendNotification(
     userId: string,
@@ -26,63 +12,42 @@ export class NotificationsService {
     title: string,
     message: string,
     data?: any,
-  ): Promise<Notification> {
-    const notification: Notification = {
-      id: Math.random().toString(36).substr(2, 9),
-      userId,
-      type,
-      title,
-      message,
-      data,
-      isRead: false,
-      createdAt: new Date(),
-    };
-
-    const key = `notifications:${userId}`;
-    const existing = (await this.cacheManager.get<Notification[]>(key)) || [];
-    await this.cacheManager.set(key, [...existing, notification]);
-
-    return notification;
+  ) {
+    const prismaType = this.resolveType(type);
+    return this.prisma.notification.create({
+      data: { userId, type: prismaType, title, message, data },
+    });
   }
 
-  async getNotifications(userId: string, unreadOnly = false): Promise<Notification[]> {
-    const key = `notifications:${userId}`;
-    const notifications = (await this.cacheManager.get<Notification[]>(key)) || [];
-
-    if (unreadOnly) {
-      return notifications.filter((n) => !n.isRead);
-    }
-
-    return notifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 50);
+  async getNotifications(userId: string, unreadOnly = false) {
+    return this.prisma.notification.findMany({
+      where: { userId, ...(unreadOnly ? { isRead: false } : {}) },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
   }
 
-  async markAsRead(id: string, userId: string): Promise<Notification | null> {
-    const key = `notifications:${userId}`;
-    const notifications = (await this.cacheManager.get<Notification[]>(key)) || [];
-
-    const notification = notifications.find((n) => n.id === id);
-    if (!notification) {
-      return null;
-    }
-
-    notification.isRead = true;
-    notification.readAt = new Date();
-    await this.cacheManager.set(key, notifications);
-
-    return notification;
+  async markAsRead(id: string, userId: string) {
+    const notification = await this.prisma.notification.findFirst({
+      where: { id, userId },
+    });
+    if (!notification) return null;
+    return this.prisma.notification.update({
+      where: { id },
+      data: { isRead: true, readAt: new Date() },
+    });
   }
 
   async markAllAsRead(userId: string): Promise<void> {
-    const key = `notifications:${userId}`;
-    const notifications = (await this.cacheManager.get<Notification[]>(key)) || [];
-
-    notifications.forEach((n) => {
-      if (!n.isRead) {
-        n.isRead = true;
-        n.readAt = new Date();
-      }
+    await this.prisma.notification.updateMany({
+      where: { userId, isRead: false },
+      data: { isRead: true, readAt: new Date() },
     });
+  }
 
-    await this.cacheManager.set(key, notifications);
+  private resolveType(type: string): NotificationType {
+    const valid = Object.values(NotificationType) as string[];
+    if (valid.includes(type)) return type as NotificationType;
+    return NotificationType.SYSTEM;
   }
 }

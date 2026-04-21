@@ -17,6 +17,60 @@ export interface LeadScore {
 export class CRMService {
   constructor(private prisma: PrismaService) {}
 
+  async getAdvancedDashboard(agentId: string) {
+    const [metrics, overdueTasks, openTasksByPriority, tasksByStatus, recentTasks] = await Promise.all([
+      this.getCRMMetrics(agentId),
+      this.getOverdueLeadTasks(agentId),
+      this.prisma.task.groupBy({
+        by: ['priority'],
+        where: { agentId, status: { in: ['PENDING', 'IN_PROGRESS'] } },
+        _count: { _all: true },
+      }),
+      this.prisma.task.groupBy({
+        by: ['status'],
+        where: { agentId },
+        _count: { _all: true },
+      }),
+      this.prisma.task.findMany({
+        where: { agentId },
+        include: {
+          relatedUser: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      }),
+    ]);
+
+    const tasksCreated = tasksByStatus.reduce((sum, item) => sum + item._count._all, 0);
+    const tasksCompleted = tasksByStatus
+      .filter((item) => item.status === 'COMPLETED')
+      .reduce((sum, item) => sum + item._count._all, 0);
+    const completionRate = tasksCreated > 0 ? (tasksCompleted / tasksCreated) * 100 : 0;
+
+    return {
+      ...metrics,
+      sla: {
+        overdueCount: overdueTasks.length,
+        overdueTasks,
+      },
+      taskPipeline: {
+        byStatus: tasksByStatus.map((item) => ({ status: item.status, count: item._count._all })),
+        byPriority: openTasksByPriority.map((item) => ({
+          priority: item.priority,
+          count: item._count._all,
+        })),
+      },
+      performance: {
+        tasksCreated,
+        tasksCompleted,
+        completionRate: Number(completionRate.toFixed(2)),
+      },
+      recentTasks,
+    };
+  }
+
   async routeLeadFromInquiry(data: {
     listingId: string;
     inquirerName: string;

@@ -21,6 +21,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { CancelSubscriptionDto } from './dto/cancel-subscription.dto';
 import { UpdateSubscriptionPlanDto } from './dto/update-subscription-plan.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PLATFORM_ADMIN_ROLES } from '../auth/constants/roles.constants';
 import { IsString, Length } from 'class-validator';
 
 class CreateCheckoutSessionDto {
@@ -56,7 +57,7 @@ export class PaymentsController {
   @Get('user/:userId')
   @UseGuards(JwtAuthGuard)
   async getUserPayments(@Param('userId') userId: string, @Request() req) {
-    const isAdmin = req.user?.role === 'ADMIN';
+    const isAdmin = PLATFORM_ADMIN_ROLES.includes(req.user?.role);
     if (!isAdmin && req.user?.id !== userId) {
       throw new ForbiddenException('Not authorized to access these payments');
     }
@@ -97,7 +98,7 @@ export class PaymentsController {
   @Get('subscriptions/user/:userId')
   @UseGuards(JwtAuthGuard)
   async getUserSubscription(@Param('userId') userId: string, @Request() req) {
-    const isAdmin = req.user?.role === 'ADMIN';
+    const isAdmin = PLATFORM_ADMIN_ROLES.includes(req.user?.role);
     if (!isAdmin && req.user?.id !== userId) {
       throw new ForbiddenException('Not authorized to access this subscription');
     }

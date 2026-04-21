@@ -14,6 +14,7 @@ import { Throttle } from '@nestjs/throttler';
 import { CreateOfferDto } from './dto/create-offer.dto';
 import { UpdateOfferStatusDto } from './dto/update-offer-status.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PLATFORM_ADMIN_ROLES } from '../auth/constants/roles.constants';
 
 @Controller('offers')
 export class OffersController {
@@ -44,7 +45,7 @@ export class OffersController {
   @Get('buyer/:buyerId')
   @UseGuards(JwtAuthGuard)
   async getBuyerOffers(@Param('buyerId') buyerId: string, @Request() req) {
-    const isAdmin = req.user?.role === 'ADMIN';
+    const isAdmin = PLATFORM_ADMIN_ROLES.includes(req.user?.role);
     if (!isAdmin && req.user?.id !== buyerId) {
       throw new ForbiddenException('Not authorized to access these offers');
     }
