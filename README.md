@@ -10,6 +10,7 @@ A world-wide, MLS-powered real estate platform built for scale from day one.
 - **SEO Optimized**: Next.js SSR with structured data for property listings
 - **Scalable Architecture**: Modular monolith ready to split into microservices
 - **Real-time Features**: Property alerts, saved searches, notifications
+- **AI Investor Intelligence**: Global growth prediction, cross-country ROI comparison, off-market luxury deal finder
 
 ## Architecture
 
@@ -148,6 +149,11 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 - `POST /api/auth/login` - Login
 - `GET /api/users/profile` - Get profile
 - `PUT /api/users/profile` - Update profile
+
+### AI & Investor Intelligence
+- `GET /api/ai/global-growth-areas` - Predict high-growth real estate markets globally (scored by momentum)
+- `POST /api/ai/global-roi-compare` - Compare investment returns across multiple countries (ROI, yields, appreciation)
+- `POST /api/ai/off-market-luxury-deals` - Find off-market luxury properties before market listings (demand vs supply scoring)
 
 ## Tech Stack
 
