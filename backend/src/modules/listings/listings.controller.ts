@@ -1,5 +1,4 @@
 import {
-  ForbiddenException,
   Controller,
   Get,
   Post,
