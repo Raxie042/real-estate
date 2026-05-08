@@ -38,21 +38,20 @@ jobs:
 
       - name: Validate staging URLs
         id: validate
-        continue-on-error: true
         run: |
           if [ -z "$SMOKE_FRONTEND_URL" ] || [ -z "$SMOKE_API_URL" ]; then
-            echo "Missing staging URL configuration." | tee -a smoke-output.log
-            echo "Set STAGING_FRONTEND_URL and STAGING_API_URL repo secrets, or pass workflow_dispatch inputs." | tee -a smoke-output.log
-            echo "exit_code=1" >> $GITHUB_OUTPUT
-            exit 1
+            echo "⚠️ Staging URLs not configured — skipping smoke run." | tee -a smoke-output.log
+            echo "Set STAGING_FRONTEND_URL and STAGING_API_URL repo secrets to enable nightly smoke tests." | tee -a smoke-output.log
+            echo "urls_configured=false" >> $GITHUB_OUTPUT
+          else
+            echo "Frontend: $SMOKE_FRONTEND_URL" | tee -a smoke-output.log
+            echo "API: $SMOKE_API_URL" | tee -a smoke-output.log
+            echo "urls_configured=true" >> $GITHUB_OUTPUT
           fi
-          echo "Frontend: $SMOKE_FRONTEND_URL" | tee -a smoke-output.log
-          echo "API: $SMOKE_API_URL" | tee -a smoke-output.log
-          echo "exit_code=0" >> $GITHUB_OUTPUT
 
       - name: Run smoke E2E against staging
         id: smoke
-        if: steps.validate.outputs.exit_code == '0'
+        if: steps.validate.outputs.urls_configured == 'true'
         continue-on-error: true
         run: |
           set -o pipefail
@@ -63,8 +62,8 @@ jobs:
         if: always()
         run: |
           RESULT="PASS ✅"
-          if [ "${{ steps.validate.outputs.exit_code }}" != "0" ]; then
-            RESULT="CONFIG FAIL ❌"
+          if [ "${{ steps.validate.outputs.urls_configured }}" != "true" ]; then
+            RESULT="SKIPPED ⚠️ (staging URLs not configured)"
           elif [ "${{ steps.smoke.outputs.exit_code }}" != "0" ]; then
             RESULT="FAIL ❌"
           fi
@@ -100,6 +99,6 @@ jobs:
         if: always()
         run: cat staging-smoke-summary.md >> $GITHUB_STEP_SUMMARY
 
-      - name: Fail workflow if validation or smoke failed
-        if: steps.validate.outputs.exit_code != '0' || steps.smoke.outputs.exit_code != '0'
+      - name: Fail workflow if smoke failed
+        if: steps.validate.outputs.urls_configured == 'true' && steps.smoke.outputs.exit_code != '0'
         run: exit 1
