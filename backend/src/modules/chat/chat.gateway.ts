@@ -6,8 +6,11 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { createClient } from 'redis';
 import { ChatService } from './chat.service';
 
 @WebSocketGateway({
@@ -16,13 +19,24 @@ import { ChatService } from './chat.service';
     credentials: true,
   },
 })
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
   public userSockets = new Map<string, string>(); // userId -> socketId
 
   constructor(private chatService: ChatService) {}
+
+  async afterInit(server: Server) {
+    const redisUrl = process.env.REDIS_URL;
+    if (redisUrl) {
+      const pubClient = createClient({ url: redisUrl });
+      const subClient = pubClient.duplicate();
+      await Promise.all([pubClient.connect(), subClient.connect()]);
+      server.adapter(createAdapter(pubClient, subClient));
+      console.log('✅ Socket.IO using Redis adapter');
+    }
+  }
 
   handleConnection(client: Socket) {
     const userId = client.handshake.query.userId as string;
