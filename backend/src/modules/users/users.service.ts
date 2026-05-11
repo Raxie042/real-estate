@@ -33,6 +33,20 @@ export class UsersService {
     });
   }
 
+  async findByLinkedinId(linkedinId: string) {
+    return this.prisma.user.findUnique({
+      where: { linkedinId },
+      include: { agency: true },
+    });
+  }
+
+  async findByMicrosoftId(microsoftId: string) {
+    return this.prisma.user.findUnique({
+      where: { microsoftId },
+      include: { agency: true },
+    });
+  }
+
   async create(data: any) {
     return this.prisma.user.create({
       data,

@@ -75,7 +75,7 @@ export class AuthService {
   }
 
   async socialLogin(profile: {
-    provider: 'google' | 'apple';
+    provider: 'google' | 'apple' | 'linkedin' | 'microsoft';
     providerId: string;
     email?: string;
     firstName?: string;
@@ -83,10 +83,16 @@ export class AuthService {
   }) {
     const { provider, providerId } = profile;
 
-    let user: any =
-      provider === 'google'
-        ? await this.usersService.findByGoogleId(providerId)
-        : await this.usersService.findByAppleId(providerId);
+    let user: any;
+    if (provider === 'google') {
+      user = await this.usersService.findByGoogleId(providerId);
+    } else if (provider === 'apple') {
+      user = await this.usersService.findByAppleId(providerId);
+    } else if (provider === 'linkedin') {
+      user = await this.usersService.findByLinkedinId(providerId);
+    } else if (provider === 'microsoft') {
+      user = await this.usersService.findByMicrosoftId(providerId);
+    }
 
     if (!user && profile.email) {
       user = await this.usersService.findByEmail(profile.email);
@@ -104,6 +110,8 @@ export class AuthService {
         emailVerified: true,
         googleId: provider === 'google' ? providerId : undefined,
         appleId: provider === 'apple' ? providerId : undefined,
+        linkedinId: provider === 'linkedin' ? providerId : undefined,
+        microsoftId: provider === 'microsoft' ? providerId : undefined,
       });
     } else {
       await this.usersService.update(user.id, {
@@ -111,6 +119,8 @@ export class AuthService {
         lastName: user.lastName || profile.lastName,
         googleId: provider === 'google' ? providerId : user.googleId,
         appleId: provider === 'apple' ? providerId : user.appleId,
+        linkedinId: provider === 'linkedin' ? providerId : user.linkedinId,
+        microsoftId: provider === 'microsoft' ? providerId : user.microsoftId,
       });
 
       user = await this.usersService.findById(user.id);

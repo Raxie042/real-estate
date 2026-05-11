@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { FaApple, FaGoogle } from 'react-icons/fa';
+import { FaApple, FaGoogle, FaLinkedin, FaMicrosoft } from 'react-icons/fa';
 import { useAuth } from '@/lib/auth-context';
 import { useTranslations } from 'next-intl';
 import { SUPPORTED_LANGUAGES, usePreferences } from '@/lib/preferences-context';
@@ -101,7 +101,7 @@ function LoginPageContent() {
     }
   };
 
-  const handleSocialLogin = (provider: 'google' | 'apple') => {
+  const handleSocialLogin = (provider: 'google' | 'apple' | 'linkedin' | 'microsoft') => {
     const state = encodeURIComponent(loginRedirectTarget);
     window.location.href = `${apiBase}/api/auth/${provider}?state=${state}`;
   };
@@ -179,22 +179,38 @@ function LoginPageContent() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => handleSocialLogin('google')}
-              className="w-full lux-button-outline inline-flex gap-2"
+              className="lux-button-outline inline-flex justify-center gap-2"
             >
               <FaGoogle className="w-4 h-4" />
-              Continue with Google
+              Google
             </button>
             <button
               type="button"
               onClick={() => handleSocialLogin('apple')}
-              className="w-full lux-button-outline inline-flex gap-2"
+              className="lux-button-outline inline-flex justify-center gap-2"
             >
               <FaApple className="w-4 h-4" />
-              Continue with Apple
+              Apple
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSocialLogin('linkedin')}
+              className="lux-button-outline inline-flex justify-center gap-2"
+            >
+              <FaLinkedin className="w-4 h-4" />
+              LinkedIn
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSocialLogin('microsoft')}
+              className="lux-button-outline inline-flex justify-center gap-2"
+            >
+              <FaMicrosoft className="w-4 h-4" />
+              Microsoft
             </button>
           </div>
 

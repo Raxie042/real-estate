@@ -182,9 +182,11 @@ model User {
   timezone      String   @default("UTC")
 
   // Social login
-  googleId   String? @unique @map("google_id")
-  appleId    String? @unique @map("apple_id")
-  facebookId String? @unique @map("facebook_id")
+  googleId    String? @unique @map("google_id")
+  appleId     String? @unique @map("apple_id")
+  facebookId  String? @unique @map("facebook_id")
+  linkedinId  String? @unique @map("linkedin_id")
+  microsoftId String? @unique @map("microsoft_id")
 
   // Profile
   bio         String?

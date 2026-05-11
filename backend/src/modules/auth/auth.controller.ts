@@ -15,6 +15,8 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { AppleAuthGuard } from './guards/apple-auth.guard';
+import { LinkedinAuthGuard } from './guards/linkedin-auth.guard';
+import { MicrosoftAuthGuard } from './guards/microsoft-auth.guard';
 import { Throttle } from '@nestjs/throttler';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -52,6 +54,32 @@ export class AuthController {
   @Get('apple/callback')
   @UseGuards(AppleAuthGuard)
   async appleCallbackGet(@Request() req, @Res() res: Response, @Query('state') state?: string) {
+    const result = await this.authService.socialLogin(req.user);
+    return this.redirectWithToken(res, result.access_token, state);
+  }
+
+  @Get('linkedin')
+  @UseGuards(LinkedinAuthGuard)
+  async linkedinAuth() {
+    return;
+  }
+
+  @Get('linkedin/callback')
+  @UseGuards(LinkedinAuthGuard)
+  async linkedinCallback(@Request() req, @Res() res: Response, @Query('state') state?: string) {
+    const result = await this.authService.socialLogin(req.user);
+    return this.redirectWithToken(res, result.access_token, state);
+  }
+
+  @Get('microsoft')
+  @UseGuards(MicrosoftAuthGuard)
+  async microsoftAuth() {
+    return;
+  }
+
+  @Get('microsoft/callback')
+  @UseGuards(MicrosoftAuthGuard)
+  async microsoftCallback(@Request() req, @Res() res: Response, @Query('state') state?: string) {
     const result = await this.authService.socialLogin(req.user);
     return this.redirectWithToken(res, result.access_token, state);
   }
