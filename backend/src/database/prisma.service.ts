@@ -4,8 +4,18 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
+    // Append connection pool params if not already in the URL.
+    // Default: 10 connections max, 20s pool timeout.
+    // Tune connection_limit based on your DB plan (e.g. 25 for Railway free tier).
+    const rawUrl = process.env.DATABASE_URL ?? '';
+    const pooledUrl =
+      rawUrl && !rawUrl.includes('connection_limit')
+        ? `${rawUrl}${rawUrl.includes('?') ? '&' : '?'}connection_limit=10&pool_timeout=20`
+        : rawUrl;
+
     super({
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      datasources: { db: { url: pooledUrl } },
     });
   }
 

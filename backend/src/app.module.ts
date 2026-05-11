@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_GUARD } from '@nestjs/core';
+import Keyv from 'keyv';
+import KeyvRedis from '@keyv/redis';
 import { AppController } from './app.controller';
 
 // Modules
@@ -49,10 +51,20 @@ import { WhiteLabelModule } from './modules/white-label/white-label.module';
       },
     ]),
 
-    // Caching (in-memory for now)
-    CacheModule.register({
+    // Caching — Redis-backed in production, in-memory fallback otherwise
+    CacheModule.registerAsync({
       isGlobal: true,
-      ttl: 300, // 5 minutes default
+      useFactory: () => {
+        const redisUrl = process.env.REDIS_URL;
+        return {
+          stores: [
+            new Keyv({
+              ...(redisUrl && { store: new KeyvRedis(redisUrl) }),
+              ttl: 5 * 60 * 1000, // 5 minutes in ms
+            }),
+          ],
+        };
+      },
     }),
 
     // Database

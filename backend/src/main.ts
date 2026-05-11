@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
+import cluster from 'node:cluster';
+import { cpus } from 'node:os';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -84,4 +86,18 @@ async function bootstrap() {
   console.log(`🚀 Application is running on: http://localhost:${port}/${apiPrefix}`);
 }
 
-bootstrap();
+// In production, fork one worker per CPU core so all cores are used.
+// In development/test, run as a single process for easier debugging.
+if (process.env.NODE_ENV === 'production' && cluster.isPrimary) {
+  const numWorkers = cpus().length;
+  console.log(`Primary ${process.pid} starting ${numWorkers} workers`);
+  for (let i = 0; i < numWorkers; i++) {
+    cluster.fork();
+  }
+  cluster.on('exit', (worker, code) => {
+    console.warn(`Worker ${worker.process.pid} exited (code ${code}), restarting…`);
+    cluster.fork();
+  });
+} else {
+  bootstrap();
+}
