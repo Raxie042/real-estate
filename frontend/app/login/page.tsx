@@ -14,7 +14,7 @@ function LoginPageContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { preferences } = usePreferences();
-  const { login, loginWithToken, isAuthenticated } = useAuth();
+  const { login, loginWithToken, isAuthenticated, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,15 +26,28 @@ function LoginPageContent() {
   const withLocale = (path: string) => `/${effectiveLocale}${path}`;
   const nextPath = searchParams.get('next');
   const tokenFromSocial = searchParams.get('token');
-  const loginRedirectTarget = nextPath && nextPath.startsWith('/') ? nextPath : withLocale('/');
+  const loginRedirectTarget = nextPath && nextPath.startsWith('/') ? nextPath : null;
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+  function getRoleRedirect(role?: string): string {
+    if (loginRedirectTarget) return loginRedirectTarget;
+    switch (role) {
+      case 'PLATFORM_ADMIN': return withLocale('/admin');
+      case 'AGENCY_ADMIN':   return withLocale('/dashboard');
+      case 'AGENT':          return withLocale('/dashboard');
+      case 'SELLER':         return withLocale('/dashboard');
+      case 'BUYER':          return withLocale('/dashboard');
+      default:               return withLocale('/');
+    }
+  }
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push(loginRedirectTarget);
+      router.push(getRoleRedirect(user?.role));
     }
-  }, [isAuthenticated, router, loginRedirectTarget]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const completeSocialLogin = async () => {
@@ -44,8 +57,8 @@ function LoginPageContent() {
       setError('');
 
       try {
-        await loginWithToken(tokenFromSocial);
-        router.push(loginRedirectTarget);
+        const role = await loginWithToken(tokenFromSocial);
+        router.push(getRoleRedirect(role));
       } catch (err: any) {
         setError(err?.message || t('loginFailed'));
       } finally {
@@ -79,8 +92,8 @@ function LoginPageContent() {
     setLoading(true);
 
     try {
-      await login(email, password);
-      router.push(loginRedirectTarget);
+      const role = await login(email, password);
+      router.push(getRoleRedirect(role));
     } catch (err: any) {
       setError(err.message || t('loginFailed'));
     } finally {

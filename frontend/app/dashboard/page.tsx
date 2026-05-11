@@ -40,7 +40,33 @@ export default function DashboardPage() {
             offers: offers.data.length,
             leads: leads.data.leads || 0,
           });
-          setActivity([]); // Optionally fetch agent activity
+          setActivity([]);
+        } else if (user.role === 'SELLER') {
+          const [listings, offers] = await Promise.all([
+            api.listings.getMine(),
+            api.offers.getAll(),
+          ]);
+          setStats({
+            active: listings.data.filter((l: any) => l.status === 'ACTIVE').length,
+            pending: listings.data.filter((l: any) => l.status === 'PENDING').length,
+            sold: listings.data.filter((l: any) => l.status === 'SOLD').length,
+            offers: offers.data.length,
+          });
+          setActivity([]);
+        } else if (user.role === 'AGENCY_ADMIN') {
+          const [listings, offers, leads] = await Promise.all([
+            api.listings.getMine(),
+            api.offers.getAll(),
+            api.crm.getMetrics(user.id),
+          ]);
+          setStats({
+            active: listings.data.filter((l: any) => l.status === 'ACTIVE').length,
+            pending: listings.data.filter((l: any) => l.status === 'PENDING').length,
+            sold: listings.data.filter((l: any) => l.status === 'SOLD').length,
+            offers: offers.data.length,
+            leads: leads.data.leads || 0,
+          });
+          setActivity([]);
         } else {
           const [favorites, offers, messages, aiRecommendations] = await Promise.all([
             api.favorites.getAll(),
@@ -149,6 +175,115 @@ export default function DashboardPage() {
                 <li key={i}>{a}</li>
               )) : <li>No recent activity</li>}
             </ul>
+          </div>
+        </SectionBoundary>
+      </div>
+    );
+  }
+
+  if (user.role === 'SELLER') {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <h1 className="text-3xl font-bold mb-6 text-[#1C1A17]">Seller Dashboard</h1>
+        <SectionBoundary sectionName="Seller overview">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="lux-card p-6">
+              <h2 className="text-xl font-semibold mb-2">My Listings</h2>
+              <ul className="space-y-2">
+                <li className="flex items-center group transition-transform hover:scale-105 animate-fade-in">
+                  {dashboardIcons.active} Active: <span className="font-bold ml-1 group-hover:text-[#27ae60] transition">{displayStats.active ?? '-'}</span>
+                </li>
+                <li className="flex items-center group transition-transform hover:scale-105 animate-fade-in">
+                  {dashboardIcons.pending} Pending: <span className="font-bold ml-1 group-hover:text-[#f39c12] transition">{displayStats.pending ?? '-'}</span>
+                </li>
+                <li className="flex items-center group transition-transform hover:scale-105 animate-fade-in">
+                  {dashboardIcons.sold} Sold: <span className="font-bold ml-1 group-hover:text-[#B78F4A] transition">{displayStats.sold ?? '-'}</span>
+                </li>
+              </ul>
+              <Link href="/list-property" className="lux-button mt-4">Add New Listing</Link>
+            </div>
+            <div className="lux-card p-6">
+              <h2 className="text-xl font-semibold mb-2">Offers Received</h2>
+              <ul className="space-y-2">
+                <li className="flex items-center group transition-transform hover:scale-105 animate-fade-in">
+                  {dashboardIcons.offers} Total Offers: <span className="font-bold ml-1 group-hover:text-[#C9A96A] transition">{displayStats.offers ?? '-'}</span>
+                </li>
+              </ul>
+              <Link href="/offers" className="lux-button mt-4">View Offers</Link>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <Link href="/my-listings" className="lux-card p-4 text-center hover:border-[#C9A96A] transition">
+              <div className="text-2xl mb-1">{dashboardIcons.listings}</div>
+              <div className="font-semibold">Manage Listings</div>
+            </Link>
+            <Link href="/messages" className="lux-card p-4 text-center hover:border-[#C9A96A] transition">
+              <div className="text-2xl mb-1">{dashboardIcons.messages}</div>
+              <div className="font-semibold">Messages</div>
+            </Link>
+            <Link href="/documents" className="lux-card p-4 text-center hover:border-[#C9A96A] transition">
+              <div className="text-2xl mb-1">{dashboardIcons.listings}</div>
+              <div className="font-semibold">Documents</div>
+            </Link>
+          </div>
+        </SectionBoundary>
+        <SectionBoundary sectionName="Seller analytics">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <ListingStatusChart />
+            <OffersChart />
+          </div>
+        </SectionBoundary>
+      </div>
+    );
+  }
+
+  if (user.role === 'AGENCY_ADMIN') {
+    return (
+      <div className="max-w-7xl mx-auto p-8">
+        <h1 className="text-3xl font-bold mb-6 text-[#1C1A17]">Agency Dashboard</h1>
+        <SectionBoundary sectionName="Agency overview">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="lux-card p-6">
+              <h2 className="text-xl font-semibold mb-2">Listings</h2>
+              <ul className="space-y-2">
+                <li className="flex items-center group transition-transform hover:scale-105 animate-fade-in">
+                  {dashboardIcons.active} Active: <span className="font-bold ml-1 group-hover:text-[#27ae60] transition">{displayStats.active ?? '-'}</span>
+                </li>
+                <li className="flex items-center group transition-transform hover:scale-105 animate-fade-in">
+                  {dashboardIcons.pending} Pending: <span className="font-bold ml-1 group-hover:text-[#f39c12] transition">{displayStats.pending ?? '-'}</span>
+                </li>
+                <li className="flex items-center group transition-transform hover:scale-105 animate-fade-in">
+                  {dashboardIcons.sold} Sold: <span className="font-bold ml-1 group-hover:text-[#B78F4A] transition">{displayStats.sold ?? '-'}</span>
+                </li>
+              </ul>
+            </div>
+            <div className="lux-card p-6">
+              <h2 className="text-xl font-semibold mb-2">Leads &amp; Offers</h2>
+              <ul className="space-y-2">
+                <li className="flex items-center group transition-transform hover:scale-105 animate-fade-in">
+                  {dashboardIcons.leads} Leads: <span className="font-bold ml-1 group-hover:text-[#C9A96A] transition">{displayStats.leads ?? '-'}</span>
+                </li>
+                <li className="flex items-center group transition-transform hover:scale-105 animate-fade-in">
+                  {dashboardIcons.offers} Offers: <span className="font-bold ml-1 group-hover:text-[#C9A96A] transition">{displayStats.offers ?? '-'}</span>
+                </li>
+              </ul>
+            </div>
+            <div className="lux-card p-6">
+              <h2 className="text-xl font-semibold mb-2">Quick Actions</h2>
+              <ul className="space-y-2">
+                <li><Link href="/agents" className="text-[#C9A96A] hover:text-[#B78F4A]">Manage Agents</Link></li>
+                <li><Link href="/leads" className="text-[#C9A96A] hover:text-[#B78F4A]">View Leads</Link></li>
+                <li><Link href="/analytics" className="text-[#C9A96A] hover:text-[#B78F4A]">Analytics</Link></li>
+                <li><Link href="/list-property" className="text-[#C9A96A] hover:text-[#B78F4A]">Add Listing</Link></li>
+              </ul>
+            </div>
+          </div>
+        </SectionBoundary>
+        <SectionBoundary sectionName="Agency analytics">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <ListingStatusChart />
+            <OffersChart />
+            <UserGrowthChart />
           </div>
         </SectionBoundary>
       </div>

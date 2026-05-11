@@ -18,8 +18,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  loginWithToken: (token: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<string | undefined>;
+  loginWithToken: (token: string) => Promise<string | undefined>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -73,27 +73,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<string | undefined> => {
     try {
       const response = await apiClient.post('/auth/login', { email, password });
       const { access_token, user: userData } = response.data;
-      
+
       localStorage.setItem('token', access_token);
       setAuthCookie();
       setUser(userData);
-      
+
       // Fetch full user profile
       await refreshUser();
+      return userData?.role as string | undefined;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Login failed');
     }
   };
 
-  const loginWithToken = async (token: string) => {
+  const loginWithToken = async (token: string): Promise<string | undefined> => {
     try {
       localStorage.setItem('token', token);
       setAuthCookie();
-      await refreshUser();
+      const response = await apiClient.post('/auth/me');
+      setUser(response.data);
+      return response.data?.role as string | undefined;
     } catch (error: any) {
       localStorage.removeItem('token');
       clearAuthCookie();
