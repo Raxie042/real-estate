@@ -87,7 +87,11 @@ export default function AdminDashboard() {
     queryKey: ['adminListings'],
     queryFn: async () => {
       const response = await api.listings?.getAll?.() || { data: [] };
-      return response.data;
+      const d = response.data;
+      if (Array.isArray(d)) return d;
+      if (Array.isArray(d?.listings)) return d.listings;
+      if (Array.isArray(d?.data)) return d.data;
+      return [];
     },
   });
 

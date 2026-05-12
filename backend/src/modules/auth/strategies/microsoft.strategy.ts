@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
-// @ts-ignore – no official @types package
-import MicrosoftStrategy from 'passport-microsoft';
+// @ts-ignore – no official @types package for passport-microsoft
+import { Strategy as MicrosoftStrategy } from 'passport-microsoft';
 
 @Injectable()
 export class MicrosoftOauthStrategy extends PassportStrategy(MicrosoftStrategy, 'microsoft') {

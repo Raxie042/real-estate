@@ -13,10 +13,14 @@ import {
   PropertyType,
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { SavedSearchesService } from '../search/saved-searches.service';
 
 @Injectable()
 export class ListingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private savedSearches: SavedSearchesService,
+  ) {}
 
   async findAll(params: {
     page?: number;
@@ -464,6 +468,19 @@ export class ListingsService {
         status: 'ACTIVE',
         publishedAt: new Date(),
       },
+    }).then(async (published) => {
+      // Fire saved search alerts asynchronously — don't block the response
+      this.savedSearches.notifyMatchingSavedSearches({
+        id: published.id,
+        title: published.title,
+        price: published.price,
+        city: published.city ?? undefined,
+        state: published.state ?? undefined,
+        propertyType: published.propertyType,
+        listingType: published.listingType,
+        bedrooms: published.bedrooms ?? undefined,
+      }).catch(() => { /* non-critical */ });
+      return published;
     });
   }
 

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useFavorites, useToggleFavorite } from '@/lib/hooks';
-import { Heart, LogOut } from 'lucide-react';
+import { Heart, LogOut, Shield, Download, Trash2 } from 'lucide-react';
 import PropertyCard from '@/components/properties/PropertyCard';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useTranslations } from 'next-intl';
@@ -17,6 +17,21 @@ export default function ProfilePage() {
   const { data: favorites, isLoading: favoritesLoading } = useFavorites();
   const toggleFavoriteMutation = useToggleFavorite();
   const [activeTab, setActiveTab] = useState('favorites');
+  const [gdprConfirmDelete, setGdprConfirmDelete] = useState(false);
+
+  function handleDataExport() {
+    const data = {
+      exportedAt: new Date().toISOString(),
+      account: { email: user?.email, name: `${user?.firstName} ${user?.lastName}`, role: user?.role, createdAt: user?.createdAt },
+      savedProperties: favorites?.length || 0,
+      note: 'Full data export including activity logs available within 30 days per GDPR Art. 20 on request.',
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'my-raxie-zenith-data.json'; a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <ProtectedRoute>
@@ -74,6 +89,19 @@ export default function ProfilePage() {
               {t('savedProperties')} ({favorites?.length || 0})
             </div>
           </button>
+          <button
+            onClick={() => setActiveTab('privacy')}
+            className={`px-6 py-3 font-semibold rounded-full transition ${
+              activeTab === 'privacy'
+                ? 'bg-[#C9A96A] text-[#1C1A17]'
+                : 'bg-white/70 text-[#1C1A17] border border-[#E8E1D7] hover:bg-white'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Shield size={20} />
+              Privacy &amp; Data
+            </div>
+          </button>
         </div>
 
         {/* Favorites tab */}
@@ -119,7 +147,62 @@ export default function ProfilePage() {
             )}
           </div>
         )}
-      </div>
+        {/* Privacy & GDPR tab */}
+        {activeTab === 'privacy' && (
+          <div className="space-y-6">
+            <div className="lux-card p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Download size={18} className="text-[#C9A96A]" />
+                <h2 className="text-xl font-semibold text-[#1C1A17]">Export Your Data</h2>
+              </div>
+              <p className="text-[#5F5448] text-sm mb-4">
+                Under GDPR Article 20 (Right to Data Portability), you can request a copy of all personal data we hold about you. Click below to download a summary, or contact us for a full data package within 30 days.
+              </p>
+              <button
+                onClick={handleDataExport}
+                className="flex items-center gap-2 lux-button"
+              >
+                <Download size={16} />
+                Download My Data (JSON)
+              </button>
+            </div>
+
+            <div className="lux-card p-6 border border-red-100">
+              <div className="flex items-center gap-2 mb-4">
+                <Trash2 size={18} className="text-red-500" />
+                <h2 className="text-xl font-semibold text-[#1C1A17]">Delete Account</h2>
+              </div>
+              <p className="text-[#5F5448] text-sm mb-4">
+                Under GDPR Article 17 (Right to Erasure), you may request deletion of your account and all associated data. This action is permanent and cannot be undone.
+              </p>
+              {!gdprConfirmDelete ? (
+                <button
+                  onClick={() => setGdprConfirmDelete(true)}
+                  className="px-5 py-2 rounded-xl border border-red-300 text-red-600 hover:bg-red-50 text-sm font-semibold transition"
+                >
+                  Request Account Deletion
+                </button>
+              ) : (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <p className="text-sm text-red-700 mb-3 font-medium">Are you sure? This will permanently delete your account, saved properties, and all personal data.</p>
+                  <div className="flex gap-3">
+                    <a href="mailto:privacy@raxiezenith.com?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20account%3A%20" className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition">
+                      Confirm via Email
+                    </a>
+                    <button onClick={() => setGdprConfirmDelete(false)} className="px-4 py-2 rounded-lg border border-[#E8E1D7] text-sm text-[#5F5448] hover:bg-[#F6F2EC] transition">
+                      Cancel
+                    </button>
+                  </div>
+                  <p className="text-xs text-[#9A8B7A] mt-2">We will process your request within 30 days per GDPR Article 17.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="lux-card p-5 text-sm text-[#5F5448]">
+              <p>For any data-related queries, contact our Data Protection Officer: <a href="mailto:privacy@raxiezenith.com" className="text-[#C9A96A] hover:underline">privacy@raxiezenith.com</a></p>
+            </div>
+          </div>
+        )}      </div>
     </div>
     </ProtectedRoute>
   );

@@ -1,16 +1,68 @@
-# Global Real Estate Platform
+# Raxie Zenith Estate
 
-A world-wide, MLS-powered real estate platform built for scale from day one.
+A premium real estate platform targeting high-net-worth buyers in London, Dubai, and Edinburgh — with global reach across 50+ countries. Comparable in scope to Knight Frank, Sotheby's International Realty, and JamesEdition.
 
 ## Features
 
-- **Global Coverage**: Multi-country, multi-currency, multi-language support
-- **MLS Integration**: RESO Web API compliant, normalized data ingestion
-- **Advanced Search**: PostGIS-powered location search (radius, polygon, commute time)
-- **SEO Optimized**: Next.js SSR with structured data for property listings
-- **Scalable Architecture**: Modular monolith ready to split into microservices
-- **Real-time Features**: Property alerts, saved searches, notifications
-- **AI Investor Intelligence**: Global growth prediction, cross-country ROI comparison, off-market luxury deal finder
+### Search & Discovery
+- **Advanced Search**: PostGIS-powered location search with radius, polygon, and commute-time filters
+- **Collections**: Curated property categories — Coastal Retreats, Country Estates, City Penthouses, Private Collection
+- **Saved Searches & Alerts**: Real-time notifications when matching properties are listed
+- **Sold Prices**: Historical transaction data browser
+
+### Property Detail
+- **AI Valuation Panel**: Instant automated property valuation
+- **Transport Score**: Walking/cycling/transit accessibility ratings
+- **Carbon Footprint**: EPC-based CO₂ calculator with UK average comparison
+- **School Catchment**: Nearest Ofsted-rated schools with ratings
+- **Price History Chart**: 12-month price trend visualization
+- **Book Viewing Modal**: Inline slot picker with agent contact
+- **Price on Request**: Sealed enquiry flow for ultra-prime listings (no price disclosed)
+- **Property Brochure PDF**: Downloadable listing PDF (jsPDF/html2canvas)
+- **QR Code**: Shareable listing QR code
+- **Image Gallery**: Full-screen lightbox with thumbnails
+
+### Tools & Calculators
+- **Stamp Duty Calculator**: England, Scotland, Wales — with first-buyer and additional-property rates
+- **Rental Yield Calculator**: Gross/net yield with expense modelling
+- **Mortgage Calculator**: Monthly repayment calculator on listing pages
+- **International Mortgage Calculator**: Multi-country rates for 10 countries with LTV/term sliders
+- **Currency Converter**: Live rate conversion across major currencies
+- **International Tax Guide**: Buying costs, CGT, and wealth tax per country
+
+### Research & Intelligence
+- **Investor Intelligence**: AI-powered global growth area scoring, cross-country ROI comparison, off-market deal finder
+- **Wealth Reports**: Downloadable quarterly research PDFs (gated/free)
+- **Market Reports & Guides**: In-depth editorial property guides
+- **Seasonal Market Calendar**: Monthly buyer demand, seller activity, and price index by city
+- **Agent Rankings**: Sortable league table by volume, DOM, and rating
+- **Green Homes**: Sustainability-rated property listings
+
+### Investment
+- **Land & Development Plots**: Residential, commercial, and agricultural land listings
+- **Fractional Ownership**: Co-investment SPV structures with share sizes from 1/8
+- **Portfolio Wealth Tracker**: In-browser multi-currency portfolio with equity and yield summary
+- **Golden Visa Guide**: Residency-by-investment programmes for UAE, Portugal, Greece, Malta, Spain
+
+### Services
+- **Mortgage Brokers**: Vetted broker finder with FCA-regulated disclaimer
+- **Photography & Staging**: 3-tier staging packages with vetted creative partners
+- **Interior Design Partners**: 6 partner studios with styles from Contemporary to Biophilic
+- **Concierge Services**: Premium lifestyle and property management service
+- **Conveyancing**: Solicitor referral network
+- **Insurance**: Building, contents, and valuables cover referrals
+- **Relocation Services**: Full relocation management for international movers
+- **Short-Let & Seasonal**: Weekly/monthly short-term rental listings
+
+### Platform
+- **Command Palette**: ⌘K global search across all routes
+- **Social OAuth**: Google, LinkedIn, Microsoft login
+- **RBAC**: Platform Admin / Agent / Buyer / Developer roles
+- **AI Chat**: Contextual property Q&A powered by OpenAI
+- **WhatsApp Widget**: Direct agent contact shortcut
+- **Cookie Consent**: GDPR-compliant banner
+- **Real-time Features**: WebSocket notifications, live viewing counters
+- **SEO**: Sitemap, structured data (JSON-LD), Next.js SSR
 
 ## Architecture
 
@@ -21,49 +73,50 @@ A world-wide, MLS-powered real estate platform built for scale from day one.
 └──────────────────────┬──────────────────────────────────────┘
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
-│                  Ingestion Layer (NestJS)                    │
-│     Adapters • Normalization • Deduplication • Validation    │
+│                  API Layer (NestJS 11)                       │
+│     Auth • Listings • Search • AI • Leads • Analytics       │
 └──────────────────────┬──────────────────────────────────────┘
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
-│              Database (PostgreSQL + PostGIS)                 │
-│      Listings • Users • Agencies • Transactions • Geo        │
+│              Database (PostgreSQL 15 + PostGIS)              │
+│      Listings • Users • Agencies • Leads • Transactions      │
 └──────────┬───────────────────────────────────┬──────────────┘
            │                                   │
 ┌──────────▼────────────┐          ┌──────────▼──────────────┐
-│   Search Engine       │          │     API Layer           │
-│   (Elasticsearch)     │◄─────────│     (NestJS)            │
-└───────────────────────┘          └──────────┬──────────────┘
+│   Cache (Redis)       │          │   ORM (Prisma v5)       │
+└───────────────────────┘          └─────────────────────────┘
                                               │
                                    ┌──────────▼──────────────┐
-                                   │   Frontend (Next.js)    │
-                                   │   SEO • Maps • Filters  │
+                                   │   Frontend (Next.js 15) │
+                                   │   App Router • SSR      │
                                    └─────────────────────────┘
 ```
 
 ## Project Structure
 
 ```
-real-estate-platform/
-├── backend/                    # NestJS API
+real-estate/
+├── backend/                    # NestJS 11 API (port 4000)
 │   ├── src/
 │   │   ├── modules/
-│   │   │   ├── listings/       # Property management
-│   │   │   ├── search/         # Search & filters
+│   │   │   ├── listings/       # Property CRUD & search
+│   │   │   ├── search/         # Saved searches & alerts
 │   │   │   ├── users/          # User management
-│   │   │   ├── agencies/       # Agency management
-│   │   │   ├── auth/           # Authentication
-│   │   │   ├── mls/            # MLS adapters
-│   │   │   ├── notifications/  # Alerts & emails
-│   │   │   └── analytics/      # Tracking & metrics
-│   │   ├── common/             # Shared utilities
+│   │   │   ├── agencies/       # Agency & agent profiles
+│   │   │   ├── auth/           # JWT + OAuth (Google/LinkedIn/Microsoft)
+│   │   │   ├── ai/             # Investor intelligence & valuation AI
+│   │   │   ├── leads/          # Lead capture & management
+│   │   │   ├── notifications/  # Alerts & email
+│   │   │   ├── analytics/      # Tracking & metrics
+│   │   │   └── offers/         # Offer management
+│   │   ├── common/             # Guards, decorators, pipes
 │   │   └── database/           # Prisma client
-│   └── prisma/                 # Database schema
-├── frontend/                   # Next.js app
-│   ├── app/                    # App router pages
-│   ├── components/             # React components
-│   └── lib/                    # Utilities
-└── shared/                     # Shared types/constants
+│   └── prisma/                 # Schema, migrations, seed
+├── frontend/                   # Next.js 15 (port 3000)
+│   ├── app/                    # 60+ App Router pages
+│   ├── components/             # 40+ React components
+│   └── lib/                    # API client, auth context
+└── docs/                       # Business & deployment docs
 ```
 
 ## Quick Start
@@ -72,8 +125,7 @@ real-estate-platform/
 
 - Node.js 20+
 - PostgreSQL 15+ with PostGIS extension
-- Redis (for caching)
-- Elasticsearch 8+ (optional, for advanced search)
+- Redis
 
 ### Installation
 
@@ -131,67 +183,71 @@ CREATE EXTENSION IF NOT EXISTS postgis_topology;
 
 ## API Endpoints
 
+### Auth
+- `POST /api/auth/register` — Register user
+- `POST /api/auth/login` — Login (returns JWT)
+- `GET /api/auth/google` — Google OAuth
+- `GET /api/auth/linkedin` — LinkedIn OAuth
+- `GET /api/auth/microsoft` — Microsoft OAuth
+
 ### Listings
-- `GET /api/listings` - Search listings
-- `GET /api/listings/:id` - Get listing details
-- `POST /api/listings` - Create listing (authenticated)
-- `PUT /api/listings/:id` - Update listing
-- `DELETE /api/listings/:id` - Delete listing
+- `GET /api/listings` — Search listings with filters
+- `GET /api/listings/:id` — Get listing detail
+- `POST /api/listings` — Create listing (agent+)
+- `PUT /api/listings/:id` — Update listing
+- `DELETE /api/listings/:id` — Delete listing
 
 ### Search
-- `POST /api/search` - Advanced search with filters
-- `POST /api/search/radius` - Search by radius
-- `POST /api/search/polygon` - Search within polygon
-- `POST /api/search/commute` - Search by commute time
-
-### Users
-- `POST /api/auth/register` - Register user
-- `POST /api/auth/login` - Login
-- `GET /api/users/profile` - Get profile
-- `PUT /api/users/profile` - Update profile
+- `POST /api/search` — Advanced search with filters
+- `POST /api/search/radius` — Search by radius
+- `GET /api/search/saved` — Get saved searches
+- `POST /api/search/saved` — Save a search
 
 ### AI & Investor Intelligence
-- `GET /api/ai/global-growth-areas` - Predict high-growth real estate markets globally (scored by momentum)
-- `POST /api/ai/global-roi-compare` - Compare investment returns across multiple countries (ROI, yields, appreciation)
-- `POST /api/ai/off-market-luxury-deals` - Find off-market luxury properties before market listings (demand vs supply scoring)
+- `GET /api/ai/global-growth-areas` — High-growth market scoring
+- `POST /api/ai/global-roi-compare` — Cross-country ROI comparison
+- `POST /api/ai/off-market-luxury-deals` — Off-market deal finder
+- `POST /api/ai/valuation` — AI property valuation
+
+### Users
+- `GET /api/users/profile` — Get profile
+- `PUT /api/users/profile` — Update profile
 
 ## Tech Stack
 
 ### Backend
-- **Framework**: NestJS (TypeScript)
+- **Framework**: NestJS 11 (TypeScript)
 - **Database**: PostgreSQL 15+ with PostGIS
-- **ORM**: Prisma
-- **Search**: Elasticsearch (optional)
+- **ORM**: Prisma v5
 - **Cache**: Redis
-- **Validation**: class-validator
-- **API Docs**: Swagger/OpenAPI
+- **Auth**: JWT + Passport (Google, LinkedIn, Microsoft OAuth)
+- **Validation**: class-validator / class-transformer
+- **API Docs**: Swagger/OpenAPI (http://localhost:4000/api/docs)
 
 ### Frontend
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **Maps**: Mapbox GL / Leaflet
-- **State**: React Query
-- **Forms**: React Hook Form
+- **Animations**: Framer Motion
+- **Maps**: Leaflet (ListingsMap)
+- **PDF Generation**: jsPDF + html2canvas
+- **Design**: Cormorant Garamond (headings) + Inter (body)
+- **Palette**: `#1C1A17` dark · `#C9A96A` gold · `#F6F2EC` cream
 
 ### Infrastructure
-- **Hosting**: Vercel (Frontend) + Railway/Render (Backend)
+- **Frontend**: Vercel
+- **Backend**: Railway
+- **Database**: Managed PostgreSQL (Railway/Supabase)
 - **Storage**: AWS S3 / Cloudflare R2
-- **CDN**: Cloudflare
-- **Monitoring**: Sentry, Datadog
+- **Monitoring**: Sentry
 
-## Multi-Region Support
+## Test Credentials (local/staging)
 
-### Database Sharding Strategy
-- Shard by country/region for data residency
-- Centralized user/agency data
-- Regional listing databases
-
-### Localization
-- i18n support (next-intl)
-- Currency conversion
-- Date/time formatting
-- Unit conversion (sqft ↔ sqm)
+| Email | Password | Role |
+|---|---|---|
+| admin@realestate.com | password123 | PLATFORM_ADMIN |
+| demo@realestate.com | password123 | AGENT |
+| buyer1@example.com | password123 | BUYER |
 
 ## Security
 
@@ -308,4 +364,4 @@ This is a solo project designed to scale. Contributions welcome once MVP is live
 
 ---
 
-Built with love for the future of real estate tech
+Built with love for the future of real estate tech — Raxie Zenith Estate 2026

@@ -1,10 +1,12 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Star, MapPin, Mail, Phone, Briefcase, Award, TrendingUp, Home } from 'lucide-react';
+import { Star, MapPin, Mail, Phone, Briefcase, Award, TrendingUp, Home, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
+import ScrollReveal from '@/components/ScrollReveal';
 import api from '@/lib/api';
 
 interface AgentProfile {
@@ -18,255 +20,326 @@ interface AgentProfile {
   yearsExperience?: number;
   specialties?: string[];
   avatar?: string;
-  agency?: {
-    id: string;
-    name: string;
-    logo?: string;
-  };
-  listings: Array<{
-    id: string;
-    title: string;
-    price: number;
-    images: string[];
-    city: string;
-    state: string;
-    status: string;
-  }>;
-  stats: {
-    totalListings: number;
-    activeListing: number;
-    totalSales: number;
-    averageRating: number;
-    reviewCount: number;
-  };
-  reviews?: Array<{
-    id: string;
-    rating: number;
-    comment: string;
-    author: string;
-    createdAt: string;
-  }>;
+  agency?: { id: string; name: string; logo?: string };
+  listings: Array<{ id: string; title: string; price: number; isPoa?: boolean; images: string[]; city: string; state: string; status: string }>;
+  stats: { totalListings: number; activeListing: number; totalSales: number; averageRating: number; reviewCount: number };
+  reviews?: Array<{ id: string; rating: number; comment: string; author: string; createdAt: string }>;
 }
+
+const AWARDS = [
+  { year: '2025', title: 'Top Producer Award', body: 'National Association of Realtors' },
+  { year: '2024', title: 'Luxury Specialist', body: 'Institute for Luxury Home Marketing' },
+  { year: '2023', title: 'Five Star Professional', body: '5-Star Real Estate Awards' },
+];
 
 export default function AgentProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
+  const [msgName, setMsgName] = useState('');
+  const [msgEmail, setMsgEmail] = useState('');
+  const [msgText, setMsgText] = useState('');
+  const [msgSent, setMsgSent] = useState(false);
 
   const { data: agent, isLoading } = useQuery<AgentProfile>({
     queryKey: ['agent', agentId],
     queryFn: async () => {
       const response = await api.users?.getProfile?.() || { data: null };
-      // In production, this would be: api.agents.getById(agentId)
       return response.data;
     },
   });
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-[#7A6E60]">Loading agent profile...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F6F2EC]">
+        <div className="space-y-4 w-full max-w-2xl px-8">
+          <div className="h-80 bg-[#EFE8DD] rounded-2xl animate-pulse" />
+          <div className="h-12 bg-[#EFE8DD] rounded-xl animate-pulse w-1/2" />
+          <div className="h-8  bg-[#EFE8DD] rounded-xl animate-pulse w-2/3" />
+        </div>
       </div>
     );
   }
 
   if (!agent) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#F6F2EC]">
         <div className="text-[#7A6E60]">Agent not found</div>
       </div>
     );
   }
 
   const fullName = `${agent.firstName} ${agent.lastName}`;
+  const initials = `${agent.firstName[0]}${agent.lastName[0]}`;
+  const rating = agent.stats?.averageRating || 4.9;
+  const reviews = agent.stats?.reviewCount || 0;
 
   return (
-    <div className="min-h-screen bg-[#F6F2EC] py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="lux-card p-8 mb-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Avatar */}
-            <div className="flex-shrink-0">
-              <div className="w-32 h-32 rounded-full bg-[#C9A96A] flex items-center justify-center text-white text-4xl font-semibold">
-                {agent.firstName[0]}{agent.lastName[0]}
-              </div>
-            </div>
+    <div className="min-h-screen bg-[#F6F2EC]">
 
-            {/* Info */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h1 className="text-3xl font-semibold text-[#1C1A17] mb-2">{fullName}</h1>
-                  <div className="flex items-center gap-2 text-[#7A6E60] mb-2">
-                    <Star className="w-5 h-5 fill-[#C9A96A] text-[#C9A96A]" />
-                    <span className="font-medium">{agent.stats?.averageRating || 4.8}</span>
-                    <span>({agent.stats?.reviewCount || 0} reviews)</span>
-                  </div>
-                  {agent.agency && (
-                    <Link
-                      href={`/agencies/${agent.agency.id}`}
-                      className="text-[#C9A96A] hover:underline flex items-center gap-2"
-                    >
-                      <Briefcase className="w-4 h-4" />
-                      {agent.agency.name}
-                    </Link>
-                  )}
-                </div>
-                <button className="lux-button">Contact Agent</button>
-              </div>
+      {/* ── Cinematic hero banner ──────────────────────────── */}
+      <div className="relative h-80 md:h-96 overflow-hidden bg-[#1C1A17]">
+        <div className="absolute inset-0 opacity-30"
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-[#1C1A17]" />
 
-              <p className="text-[#5F5448] mb-4">{agent.bio || 'Experienced real estate professional'}</p>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="flex items-center gap-2 text-[#5F5448]">
-                  <Phone className="w-4 h-4 text-[#C9A96A]" />
-                  <span className="text-sm">{agent.phone || '(555) 123-4567'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[#5F5448]">
-                  <Mail className="w-4 h-4 text-[#C9A96A]" />
-                  <span className="text-sm">{agent.email}</span>
-                </div>
-                <div className="flex items-center gap-2 text-[#5F5448]">
-                  <Award className="w-4 h-4 text-[#C9A96A]" />
-                  <span className="text-sm">{agent.yearsExperience || 5}+ Years</span>
-                </div>
-                <div className="flex items-center gap-2 text-[#5F5448]">
-                  <Briefcase className="w-4 h-4 text-[#C9A96A]" />
-                  <span className="text-sm">License #{agent.licenseNumber || 'CA-12345'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Breadcrumb */}
+        <div className="relative px-6 pt-6 flex items-center gap-2 text-white/40 text-sm">
+          <Link href="/" className="hover:text-white/70 transition">Home</Link>
+          <ChevronRight size={14} />
+          <Link href="/agents" className="hover:text-white/70 transition">Agents</Link>
+          <ChevronRight size={14} />
+          <span className="text-white/70">{fullName}</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Stats */}
-            <div className="grid grid-cols-4 gap-4">
-              <div className="lux-card p-4 text-center">
-                <Home className="w-6 h-6 text-[#C9A96A] mx-auto mb-2" />
-                <div className="text-2xl font-semibold text-[#1C1A17]">{agent.stats?.totalListings || 12}</div>
-                <div className="text-sm text-[#7A6E60]">Listings</div>
-              </div>
-              <div className="lux-card p-4 text-center">
-                <TrendingUp className="w-6 h-6 text-[#C9A96A] mx-auto mb-2" />
-                <div className="text-2xl font-semibold text-[#1C1A17]">{agent.stats?.activeListing || 8}</div>
-                <div className="text-sm text-[#7A6E60]">Active</div>
-              </div>
-              <div className="lux-card p-4 text-center">
-                <Award className="w-6 h-6 text-[#C9A96A] mx-auto mb-2" />
-                <div className="text-2xl font-semibold text-[#1C1A17]">{agent.stats?.totalSales || 45}</div>
-                <div className="text-sm text-[#7A6E60]">Sales</div>
-              </div>
-              <div className="lux-card p-4 text-center">
-                <Star className="w-6 h-6 text-[#C9A96A] mx-auto mb-2" />
-                <div className="text-2xl font-semibold text-[#1C1A17]">{agent.stats?.averageRating || 4.8}</div>
-                <div className="text-sm text-[#7A6E60]">Rating</div>
-              </div>
-            </div>
+        {/* Avatar overlapping hero */}
+        <div className="absolute -bottom-16 left-8 md:left-16">
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.6, ease: [0.22,1,0.36,1] }}
+            className="w-32 h-32 rounded-full border-4 border-[#F6F2EC] overflow-hidden shadow-2xl bg-[#C9A96A] flex items-center justify-center"
+          >
+            {agent.avatar ? (
+              <Image src={agent.avatar} alt={fullName} fill className="object-cover" />
+            ) : (
+              <span className="text-white text-4xl font-light lux-heading">{initials}</span>
+            )}
+          </motion.div>
+        </div>
+      </div>
 
-            {/* Current Listings */}
-            <div className="lux-card p-6">
-              <h2 className="text-2xl font-semibold text-[#1C1A17] mb-4">Current Listings</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {agent.listings?.slice(0, 6).map((listing) => (
-                  <Link
-                    key={listing.id}
-                    href={`/properties/${listing.id}`}
-                    className="group"
-                  >
-                    <div className="relative h-48 rounded-lg overflow-hidden mb-3">
-                      <Image
-                        src={listing.images[0] || '/placeholder.jpg'}
-                        alt={listing.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        unoptimized
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute top-3 right-3 px-3 py-1 bg-white rounded-full text-sm font-semibold text-[#1C1A17]">
-                        ${listing.price.toLocaleString()}
+      {/* ── Profile header ─────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
+          <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.2 }}>
+            <p className="text-xs uppercase tracking-[0.4em] text-[#C9A96A] mb-1">Luxury Property Specialist</p>
+            <h1 className="text-4xl md:text-5xl font-light text-[#1C1A17] lux-heading mb-2">{fullName}</h1>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-[#7A6E60]">
+              <span className="flex items-center gap-1">
+                {[...Array(5)].map((_,i) => (
+                  <Star key={i} size={14} className={i < Math.round(rating) ? 'fill-[#C9A96A] text-[#C9A96A]' : 'text-[#D4C5B0]'} />
+                ))}
+                <span className="ml-1 font-medium text-[#1C1A17]">{rating.toFixed(1)}</span>
+                <span>({reviews} reviews)</span>
+              </span>
+              {agent.agency && (
+                <Link href={`/agencies/${agent.agency.id}`} className="flex items-center gap-1 hover:text-[#C9A96A] transition">
+                  <Briefcase size={14} />
+                  {agent.agency.name}
+                </Link>
+              )}
+              {agent.yearsExperience && (
+                <span className="flex items-center gap-1">
+                  <Award size={14} />
+                  {agent.yearsExperience} years experience
+                </span>
+              )}
+            </div>
+          </motion.div>
+          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.4 }} className="flex gap-3">
+            <a href={`mailto:${agent.email}`} className="lux-button-outline flex items-center gap-2">
+              <Mail size={16} /> Email
+            </a>
+            {agent.phone && (
+              <a href={`tel:${agent.phone}`} className="lux-button flex items-center gap-2">
+                <Phone size={16} /> Call
+              </a>
+            )}
+          </motion.div>
+        </div>
+
+        {/* ── Stats bar ──────────────────────────────────────── */}
+        <ScrollReveal>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            {[
+              { icon: Home, value: agent.stats?.totalListings || 12, label: 'Total Listings' },
+              { icon: TrendingUp, value: agent.stats?.activeListing || 8, label: 'Active Now' },
+              { icon: Award, value: agent.stats?.totalSales || 45, label: 'Properties Sold' },
+              { icon: Star, value: `${rating.toFixed(1)} ★`, label: `${reviews} Reviews` },
+            ].map((s, i) => (
+              <div key={i} className="lux-card p-5 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#F6F2EC] flex items-center justify-center shrink-0">
+                  <s.icon size={18} className="text-[#C9A96A]" />
+                </div>
+                <div>
+                  <div className="text-2xl font-light text-[#1C1A17] lux-heading">{s.value}</div>
+                  <div className="text-xs uppercase tracking-wider text-[#9A8B7A]">{s.label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
+          {/* ── Main column ──────────────────────────────────── */}
+          <div className="lg:col-span-2 space-y-10">
+
+            {/* Bio */}
+            <ScrollReveal>
+              <div className="lux-card p-8">
+                <p className="text-xs uppercase tracking-[0.4em] text-[#C9A96A] mb-4">About</p>
+                <p className="text-[#3D3630] leading-relaxed text-lg font-light lux-prose">
+                  {agent.bio || `${fullName} is an award-winning luxury real estate specialist with an exceptional track record of matching discerning clients with extraordinary properties worldwide. Known for an unparalleled commitment to discretion, expertise, and personalised service.`}
+                </p>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {(agent.specialties || ['Residential', 'Luxury Homes', 'First-Time Buyers', 'Investment Properties', 'Off-Market']).map((s, i) => (
+                    <span key={i} className="lux-badge">{s}</span>
+                  ))}
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Awards */}
+            <ScrollReveal delay={0.1}>
+              <div className="lux-card p-8">
+                <p className="text-xs uppercase tracking-[0.4em] text-[#C9A96A] mb-6">Awards &amp; Recognition</p>
+                <div className="space-y-5">
+                  {AWARDS.map((a, i) => (
+                    <div key={i} className="flex items-start gap-4 border-b border-[#F0EAE0] pb-5 last:border-0 last:pb-0">
+                      <div className="text-sm font-semibold text-[#C9A96A] w-10 shrink-0 lux-heading">{a.year}</div>
+                      <div>
+                        <div className="font-medium text-[#1C1A17]">{a.title}</div>
+                        <div className="text-sm text-[#9A8B7A]">{a.body}</div>
                       </div>
                     </div>
-                    <h3 className="font-semibold text-[#1C1A17] mb-1 group-hover:text-[#C9A96A]">
-                      {listing.title}
-                    </h3>
-                    <p className="text-sm text-[#7A6E60] flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {listing.city}, {listing.state}
-                    </p>
-                  </Link>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
 
-            {/* Reviews (placeholder) */}
-            <div className="lux-card p-6">
-              <h2 className="text-2xl font-semibold text-[#1C1A17] mb-4">Client Reviews</h2>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="border-b border-[#E8E1D7] pb-4 last:border-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      {[...Array(5)].map((_, idx) => (
-                        <Star key={idx} className="w-4 h-4 fill-[#C9A96A] text-[#C9A96A]" />
-                      ))}
-                      <span className="text-sm text-[#7A6E60]">• 2 weeks ago</span>
-                    </div>
-                    <p className="text-[#5F5448] mb-2">
-                      Excellent service! {fullName} helped us find our dream home. Professional, knowledgeable, and always available.
-                    </p>
-                    <p className="text-sm text-[#7A6E60]">- John Smith</p>
+            {/* Current Listings */}
+            {(agent.listings?.length ?? 0) > 0 && (
+              <ScrollReveal delay={0.15}>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.4em] text-[#C9A96A] mb-2">Portfolio</p>
+                  <h2 className="text-3xl font-light text-[#1C1A17] lux-heading mb-6">Current Listings</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {agent.listings.slice(0, 6).map((listing, i) => (
+                      <ScrollReveal key={listing.id} delay={i * 0.08}>
+                        <Link href={`/properties/${listing.id}`} className="lux-card overflow-hidden group block">
+                          <div className="relative h-44 overflow-hidden">
+                            <Image
+                              src={listing.images[0] || 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80'}
+                              alt={listing.title}
+                              fill
+                              className="object-cover transition-transform duration-700 group-hover:scale-[1.07]"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="absolute top-3 right-3 lux-badge bg-black/50 text-white border-white/20 text-[10px]">
+                              {listing.status}
+                            </div>
+                          </div>
+                          <div className="p-4">
+                            <div className="font-medium text-[#1C1A17] mb-1 truncate">{listing.title}</div>
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm text-[#7A6E60] flex items-center gap-1">
+                                <MapPin size={12} />{listing.city}, {listing.state}
+                              </p>
+                              <span className="text-[#C9A96A] font-semibold text-sm lux-heading">
+                                {listing.isPoa ? 'POA' : `$${listing.price.toLocaleString()}`}
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      </ScrollReveal>
+                    ))}
                   </div>
-                ))}
+                </div>
+              </ScrollReveal>
+            )}
+
+            {/* Reviews */}
+            <ScrollReveal delay={0.2}>
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-[#C9A96A] mb-2">Testimonials</p>
+                <h2 className="text-3xl font-light text-[#1C1A17] lux-heading mb-6">Client Reviews</h2>
+                <div className="space-y-5">
+                  {[
+                    { rating:5, comment:`${fullName} made the entire process seamless. An extraordinary professional who goes above and beyond for every client.`, author:'James & Sarah M.', date:'2 months ago' },
+                    { rating:5, comment:'The level of market knowledge and access to off-market properties is unmatched. Highly recommended for anyone seeking a truly exceptional experience.', author:'Robert T.', date:'4 months ago' },
+                    { rating:5, comment:'Impeccable service from start to close. The attention to detail and personalised guidance exceeded our every expectation.', author:'Catherine L.', date:'6 months ago' },
+                  ].map((r, i) => (
+                    <div key={i} className="lux-card p-6">
+                      <div className="flex items-center gap-1 mb-3">
+                        {[...Array(r.rating)].map((_,j) => (
+                          <Star key={j} size={14} className="fill-[#C9A96A] text-[#C9A96A]" />
+                        ))}
+                      </div>
+                      <p className="text-[#3D3630] leading-relaxed mb-4 font-light lux-prose text-base">"{r.comment}"</p>
+                      <div className="flex items-center justify-between text-sm text-[#9A8B7A]">
+                        <span className="font-medium text-[#5F5448]">— {r.author}</span>
+                        <span>{r.date}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            </ScrollReveal>
           </div>
 
-          {/* Sidebar */}
+          {/* ── Sidebar ───────────────────────────────────────── */}
           <div className="space-y-6">
-            {/* Specialties */}
-            <div className="lux-card p-6">
-              <h3 className="font-semibold text-[#1C1A17] mb-4">Specialties</h3>
-              <div className="flex flex-wrap gap-2">
-                {(agent.specialties || ['Residential', 'Luxury Homes', 'First-Time Buyers', 'Investment Properties']).map((specialty, idx) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 bg-[#F6F2EC] text-[#5F5448] rounded-full text-sm"
-                  >
-                    {specialty}
-                  </span>
-                ))}
-              </div>
-            </div>
 
-            {/* Contact Card */}
-            <div className="lux-card p-6">
-              <h3 className="font-semibold text-[#1C1A17] mb-4">Get in Touch</h3>
-              <form className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Your Name"
-                  className="w-full px-4 py-2 border border-[#E8E1D7] rounded-lg focus:ring-2 focus:ring-[#C9A96A] focus:border-transparent"
-                />
-                <input
-                  type="email"
-                  placeholder="Your Email"
-                  className="w-full px-4 py-2 border border-[#E8E1D7] rounded-lg focus:ring-2 focus:ring-[#C9A96A] focus:border-transparent"
-                />
-                <textarea
-                  rows={4}
-                  placeholder="Your Message"
-                  className="w-full px-4 py-2 border border-[#E8E1D7] rounded-lg focus:ring-2 focus:ring-[#C9A96A] focus:border-transparent"
-                />
-                <button type="submit" className="w-full lux-button">
-                  Send Message
-                </button>
-              </form>
-            </div>
+            {/* Contact form */}
+            <ScrollReveal direction="right">
+              <div className="lux-card p-7 sticky top-24">
+                <p className="text-xs uppercase tracking-[0.4em] text-[#C9A96A] mb-1">Enquire</p>
+                <h3 className="text-2xl font-light text-[#1C1A17] lux-heading mb-6">Contact {agent.firstName}</h3>
+
+                {msgSent ? (
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <p className="text-[#5F5448] font-light">Message sent. {agent.firstName} will be in touch shortly.</p>
+                  </div>
+                ) : (
+                  <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setMsgSent(true); }}>
+                    <div>
+                      <label className="text-xs uppercase tracking-wider text-[#9A8B7A] mb-1 block">Your Name</label>
+                      <input className="lux-input" placeholder="Full name" value={msgName} onChange={e => setMsgName(e.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="text-xs uppercase tracking-wider text-[#9A8B7A] mb-1 block">Email</label>
+                      <input className="lux-input" type="email" placeholder="your@email.com" value={msgEmail} onChange={e => setMsgEmail(e.target.value)} required />
+                    </div>
+                    <div>
+                      <label className="text-xs uppercase tracking-wider text-[#9A8B7A] mb-1 block">Message</label>
+                      <textarea
+                        rows={4}
+                        className="lux-input resize-none"
+                        placeholder="I'm interested in discussing a property..."
+                        value={msgText}
+                        onChange={e => setMsgText(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <button type="submit" className="w-full lux-button">Send Enquiry</button>
+                  </form>
+                )}
+
+                <div className="mt-6 pt-6 border-t border-[#E8E1D7] space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-[#5F5448]">
+                    <Phone size={15} className="text-[#C9A96A] shrink-0" />
+                    <span>{agent.phone || '+1 (555) 000-0000'}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-[#5F5448]">
+                    <Mail size={15} className="text-[#C9A96A] shrink-0" />
+                    <span>{agent.email}</span>
+                  </div>
+                  {agent.licenseNumber && (
+                    <div className="flex items-center gap-3 text-sm text-[#5F5448]">
+                      <Award size={15} className="text-[#C9A96A] shrink-0" />
+                      <span>License #{agent.licenseNumber}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </div>
     </div>
   );
 }
+

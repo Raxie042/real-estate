@@ -2,12 +2,25 @@ const path = require('path');
 const fs = require('fs');
 
 module.exports = function(options, webpack) {
+  const baseExternals = Array.isArray(options.externals)
+    ? options.externals
+    : options.externals
+    ? [options.externals]
+    : [];
+
   return {
     ...options,
-    externals: {
-      '@mapbox/node-pre-gyp': 'commonjs2 @mapbox/node-pre-gyp',
-      'node-pre-gyp': 'commonjs2 node-pre-gyp',
-    },
+    externals: [
+      ...baseExternals,
+      { '@mapbox/node-pre-gyp': 'commonjs2 @mapbox/node-pre-gyp' },
+      { 'node-pre-gyp': 'commonjs2 node-pre-gyp' },
+      { 'passport-linkedin-oauth2': 'commonjs2 passport-linkedin-oauth2' },
+      { 'passport-microsoft': 'commonjs2 passport-microsoft' },
+      { 'passport-google-oauth20': 'commonjs2 passport-google-oauth20' },
+      { 'passport-apple': 'commonjs2 passport-apple' },
+      { 'passport-local': 'commonjs2 passport-local' },
+      { 'passport-jwt': 'commonjs2 passport-jwt' },
+    ],
     plugins: [
       ...options.plugins,
       new webpack.IgnorePlugin({

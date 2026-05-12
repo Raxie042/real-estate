@@ -1,13 +1,96 @@
 'use client';
 
 import Link from 'next/link';
-import { User, ChevronDown, LogOut, Heart, Plus, FileText } from 'lucide-react';
+import { User, ChevronDown, LogOut, Heart, Plus, FileText, Settings } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import PreferencesPanel from '@/components/layout/PreferencesPanel';
 import { useTranslations } from 'next-intl';
 import { useWhiteLabel } from '@/lib/white-label-context';
+
+const NAV_GROUPS = [
+  {
+    label: 'Buy & Rent',
+    items: [
+      { label: 'Browse Properties', href: '/properties' },
+      { label: 'Advanced Search', href: '/search' },
+      { label: 'Valuation', href: '/valuation' },
+      { label: 'Compare Properties', href: '/comparison' },
+    ],
+  },
+  {
+    label: 'Collections',
+    items: [
+      { label: 'All Collections', href: '/collections' },
+      { label: 'Coastal Retreats', href: '/collections#coastal-retreats' },
+      { label: 'Country Estates', href: '/collections#country-estates' },
+      { label: 'City Penthouses', href: '/collections#city-penthouses' },
+      { label: 'New Developments', href: '/new-developments' },
+      { label: 'Commercial', href: '/commercial' },
+      { label: 'Auctions', href: '/auctions' },
+      { label: 'Magazine', href: '/magazine' },
+      { label: 'Private Collection ✦', href: '/private', gold: true },
+    ],
+  },
+  {
+    label: 'Research',
+    items: [
+      { label: 'Market Reports', href: '/resources' },
+      { label: 'Guides & Advice', href: '/guides' },
+      { label: 'Neighbourhood Guides', href: '/neighbourhoods' },
+      { label: 'Stamp Duty Calculator', href: '/stamp-duty' },
+      { label: 'Rental Yield Calculator', href: '/rental-yield' },
+      { label: 'Currency Converter', href: '/currency-converter' },
+      { label: 'International Tax Guide', href: '/tax-guide' },
+      { label: 'International Mortgage Calculator', href: '/international-mortgage' },
+      { label: 'Seasonal Market Calendar', href: '/market-calendar' },
+      { label: 'Investor Intelligence', href: '/investor-intelligence' },
+      { label: 'Wealth Reports', href: '/wealth-report' },
+      { label: 'Agent Rankings', href: '/agent-rankings' },
+      { label: 'Green Homes', href: '/green-homes' },
+      { label: 'Find an Agent', href: '/agents' },
+      { label: 'Agencies', href: '/agencies' },
+    ],
+  },
+  {
+    label: 'Invest',
+    items: [
+      { label: 'Land & Development Plots', href: '/land' },
+      { label: 'Fractional Ownership', href: '/fractional' },
+      { label: 'Portfolio Tracker', href: '/portfolio' },
+      { label: 'Golden Visa Guide', href: '/golden-visa' },
+      { label: 'Sold Prices', href: '/sold' },
+    ],
+  },
+  {
+    label: 'About',
+    items: [
+      { label: 'About Us', href: '/about' },
+      { label: 'Awards & Recognition', href: '/awards' },
+      { label: 'Testimonials', href: '/testimonials' },
+      { label: 'Developers', href: '/developers' },
+      { label: 'Events', href: '/events' },
+      { label: 'Videos', href: '/videos' },
+      { label: 'Offices', href: '/offices' },
+      { label: 'Press', href: '/press' },
+      { label: 'Financing', href: '/financing' },
+      { label: 'Property Management', href: '/property-management' },
+      { label: 'Concierge Services', href: '/concierge' },
+      { label: 'Insurance', href: '/insurance' },
+      { label: 'Conveyancing', href: '/conveyancing' },
+      { label: 'Mortgage Brokers', href: '/mortgage-brokers' },
+      { label: 'Photography & Staging', href: '/staging' },
+      { label: 'Interior Design', href: '/interior-design' },
+      { label: 'Short-Let & Seasonal', href: '/short-let' },
+      { label: 'Mobile App', href: '/app' },
+      { label: 'Relocation Services', href: '/relocation' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Careers', href: '/careers' },
+      { label: 'Accessibility', href: '/accessibility' },
+    ],
+  },
+];
 
 export default function Header() {
   const t = useTranslations('Header');
@@ -16,23 +99,21 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState<number | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Onboarding modal state
-    const [showOnboarding, setShowOnboarding] = useState(false);
-    useEffect(() => {
-      // Show onboarding modal only on first visit (localStorage flag)
-      if (!localStorage.getItem('raxie-onboarded')) {
-        setShowOnboarding(true);
-      }
-    }, []);
+  useEffect(() => {
+    if (!localStorage.getItem('raxie-onboarded')) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
-    const handleCloseOnboarding = () => {
-      setShowOnboarding(false);
-      localStorage.setItem('raxie-onboarded', 'true');
-    };
+  const handleCloseOnboarding = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('raxie-onboarded', 'true');
+  };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -64,367 +145,268 @@ export default function Header() {
               <li>📊 <b>{t('onboardingAnalytics')}:</b> {t('onboardingAnalyticsDesc')}</li>
               <li>💬 <b>{t('onboardingChat')}:</b> {t('onboardingChatDesc')}</li>
             </ul>
-            <button
-              className="lux-button"
-              onClick={handleCloseOnboarding}
-            >
+            <button className="lux-button" onClick={handleCloseOnboarding}>
               {t('getStarted')}
             </button>
           </div>
         </div>
       )}
-      <header className="bg-white/80 backdrop-blur border-b border-[#E8E1D7] sticky top-0 z-50">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            {config.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={config.logoUrl} alt={config.brandName} className="h-9 w-auto object-contain" />
-            ) : null}
-            <div className="text-2xl font-semibold tracking-wide text-[#1C1A17] lux-heading">
-              <span>{config.brandName}</span>
-            </div>
-          </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/properties" className="text-[#2B2620] hover:text-[#C9A96A]">
-              {t('properties')}
-            </Link>
-            <Link href="/search" className="text-[#2B2620] hover:text-[#C9A96A]">
-              {t('search')}
-            </Link>
-            <Link href="/agencies" className="text-[#2B2620] hover:text-[#C9A96A]">
-              {t('agencies')}
-            </Link>
-            <Link href="/valuation" className="text-[#2B2620] hover:text-[#C9A96A]">
-              {t('valuation')}
-            </Link>
-            <Link href="/investor-intelligence" className="text-[#2B2620] hover:text-[#C9A96A]">
-              Investor AI
-            </Link>
-            <Link href="/about" className="text-[#2B2620] hover:text-[#C9A96A]">
-              {t('about')}
-            </Link>
-            <Link href="/list-property" className="text-[#2B2620] hover:text-[#C9A96A] font-medium">
-              {t('listProperty')}
-            </Link>
-            <button
-              type="button"
-              onClick={() => setIsPreferencesOpen(true)}
-              className="text-[#2B2620] hover:text-[#C9A96A]"
-            >
-              {t('preferences')}
-            </button>
-          </div>
+      <header className="sticky top-0 z-50 bg-white shadow-[0_1px_0_0_#E8E1D7]">
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            {isAuthenticated ? (
-              <>
-                <NotificationDropdown />
-                <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 bg-[#C9A96A] text-[#1C1A17] px-4 py-2 rounded-full hover:bg-[#B78F4A] transition-colors"
-                >
-                  <User size={18} />
-                  <span>{user?.firstName || t('account')}</span>
-                  <ChevronDown size={16} className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {/* Dropdown Menu */}
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-[#E8E1D7] py-2 z-50">
-                    <Link
-                      href="/profile"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <User size={18} />
-                      <span>My Profile</span>
-                    </Link>
-                    <Link
-                      href="/my-listings"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <FileText size={18} />
-                      <span>My Listings</span>
-                    </Link>
-                    <Link
-                      href="/open-houses"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                      <span>Open Houses</span>
-                    </Link>
-                    <Link
-                      href="/offers"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
-                      <span>Offers</span>
-                    </Link>
-                    <Link
-                      href="/documents"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <FileText size={18} />
-                      <span>Documents</span>
-                    </Link>
-                    <Link
-                      href="/messages"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                      <span>Messages</span>
-                    </Link>
-                    <Link
-                      href="/investor-intelligence"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
-                      <span>Investor Intelligence</span>
-                    </Link>
-                    <Link
-                      href="/profile"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <Heart size={18} />
-                      <span>Saved Properties</span>
-                    </Link>
-                    <Link
-                      href="/subscriptions"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
-                      <span>Subscription</span>
-                    </Link>
-                    <Link
-                      href="/list-property"
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                    >
-                      <Plus size={18} />
-                      <span>List Property</span>
-                    </Link>
-                    {(user?.role === 'ADMIN' || user?.role === 'PLATFORM_ADMIN' || user?.role === 'AGENT') && (
-                      <>
-                        <Link
-                          href="/dashboard"
-                          onClick={() => setIsDropdownOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-                          <span>Dashboard</span>
-                        </Link>
-                      </>
-                    )}
-                    <div className="border-t border-[#E8E1D7] my-2"></div>
-                    <button
-                      onClick={() => {
-                        logout();
-                        setIsDropdownOpen(false);
-                      }}
-                      className="flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-[#F4EFE8] transition-colors w-full text-left"
-                    >
-                      <LogOut size={18} />
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-[#2B2620] hover:text-[#C9A96A]"
-                >
-                  {t('signIn')}
-                </Link>
-                <Link
-                  href="/register"
-                  className="bg-[#C9A96A] text-[#1C1A17] px-4 py-2 rounded-full hover:bg-[#B78F4A] transition-colors"
-                >
-                  {t('getStarted')}
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              {isMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+        {/* ── Top utility bar ── */}
+        <div className="bg-[#1C1A17] text-white/60 text-[11px] tracking-wide">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-9 flex items-center justify-between">
+            <span className="hidden sm:block">+44 20 7123 4567 &nbsp;·&nbsp; Mon–Sat 9am–6pm GMT</span>
+            <div className="flex items-center gap-5 ml-auto">
+              <button
+                type="button"
+                onClick={() => setIsPreferencesOpen(true)}
+                className="flex items-center gap-1.5 hover:text-[#C9A96A] transition"
+              >
+                <Settings size={12} />
+                {t('preferences')}
+              </button>
+              {!isAuthenticated && (
+                <>
+                  <Link href="/login" className="hover:text-[#C9A96A] transition">{t('signIn')}</Link>
+                  <Link href="/register" className="hover:text-[#C9A96A] transition">{t('getStarted')}</Link>
+                </>
               )}
-            </svg>
-          </button>
+            </div>
+          </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4 space-y-4">
-            <button
-              type="button"
-              onClick={() => {
-                setIsPreferencesOpen(true);
-                setIsMenuOpen(false);
-              }}
-              className="block text-[#2B2620]"
-            >
-              {t('preferences')}
-            </button>
-            <Link href="/properties" className="block text-[#2B2620]">
-              {t('properties')}
+        {/* ── Main nav ── */}
+        <nav
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+          onMouseLeave={() => setActiveNav(null)}
+        >
+          <div className="flex items-center justify-between h-[68px]">
+
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2.5 shrink-0">
+              {config.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={config.logoUrl} alt={config.brandName} className="h-9 w-auto object-contain" />
+              ) : null}
+              <span className="text-[22px] font-semibold tracking-wide text-[#1C1A17] lux-heading whitespace-nowrap">
+                {config.brandName}
+              </span>
             </Link>
-            <Link href="/search" className="block text-[#2B2620]">
-              {t('search')}
-            </Link>
-            <Link href="/agencies" className="block text-[#2B2620]">
-              {t('agencies')}
-            </Link>
-            <Link href="/valuation" className="block text-[#2B2620]">
-              {t('valuation')}
-            </Link>
-            <Link href="/about" className="block text-[#2B2620]">
-              {t('about')}
-            </Link>
-            <div className="pt-4 border-t space-y-2">
-              {isAuthenticated ? (
-                <>
-                  <Link
-                    href="/profile"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block text-[#2B2620] py-2"
-                  >
-                    {t('myProfile')}
-                  </Link>
-                  <Link
-                    href="/my-listings"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block text-[#2B2620] py-2"
-                  >
-                    {t('myListings')}
-                  </Link>
-                  <Link
-                    href="/open-houses"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block text-[#2B2620] py-2"
-                  >
-                    Open Houses
-                  </Link>
-                  <Link
-                    href="/offers"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block text-[#2B2620] py-2"
-                  >
-                    Offers
-                  </Link>
-                  <Link
-                    href="/documents"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block text-[#2B2620] py-2"
-                  >
-                    Documents
-                  </Link>
-                  <Link
-                    href="/messages"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block text-[#2B2620] py-2"
-                  >
-                    Messages
-                  </Link>
-                  <Link
-                    href="/subscriptions"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block text-[#2B2620] py-2"
-                  >
-                    {t('subscription')}
-                  </Link>
-                  <Link
-                    href="/list-property"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block text-[#2B2620] py-2 font-medium"
-                  >
-                    {t('listProperty')}
-                  </Link>
-                  {user?.role === 'ADMIN' && (
-                    <Link
-                      href="/admin"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block text-[#2B2620] py-2 font-medium"
-                    >
-                      {t('adminDashboard')}
-                    </Link>
-                  )}
+
+            {/* ── Desktop nav groups ── */}
+            <div className="hidden lg:flex items-center gap-0 relative">
+              {NAV_GROUPS.map((group, i) => (
+                <div
+                  key={group.label}
+                  className="relative"
+                  onMouseEnter={() => setActiveNav(i)}
+                >
                   <button
-                    onClick={() => {
-                      logout();
-                      setIsMenuOpen(false);
-                    }}
-                    className="block w-full text-left text-red-600 py-2 font-medium"
+                    type="button"
+                    className={`flex items-center gap-1 px-4 py-2 text-[13px] font-medium tracking-wide transition-colors ${
+                      activeNav === i ? 'text-[#C9A96A]' : 'text-[#2B2620] hover:text-[#C9A96A]'
+                    }`}
                   >
-                    {t('logout')}
+                    {group.label}
+                    <ChevronDown size={13} className={`transition-transform duration-200 ${activeNav === i ? 'rotate-180' : ''}`} />
                   </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block text-[#2B2620]"
+
+                  {activeNav === i && (
+                    <div className="absolute top-full left-0 mt-0 w-52 bg-white border border-[#E8E1D7] shadow-xl rounded-b-xl py-2 z-50">
+                      {group.items.map(item => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setActiveNav(null)}
+                          className={`block px-5 py-2.5 text-[13px] transition-colors hover:bg-[#F6F2EC] ${
+                            (item as { gold?: boolean }).gold
+                              ? 'text-[#C9A96A] font-medium'
+                              : 'text-[#2B2620]'
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* ── Right actions ── */}
+            <div className="hidden lg:flex items-center gap-3">
+              {/* ⌘K search trigger */}
+              <button
+                onClick={() => {
+                  const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true });
+                  window.dispatchEvent(event);
+                }}
+                className="flex items-center gap-2 bg-[#F6F2EC] border border-[#E8E1D7] text-[#7A6E60] hover:border-[#C9A96A] hover:text-[#1C1A17] px-3 py-2 rounded-lg text-xs transition"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><circle cx={11} cy={11} r={8}/><path d="m21 21-4.35-4.35"/></svg>
+                <span>Search</span>
+                <kbd className="ml-1 font-mono text-[10px] bg-white border border-[#E8E1D7] rounded px-1">⌘K</kbd>
+              </button>
+
+              <Link
+                href="/list-property"
+                className="lux-button text-[13px] px-5 py-2 whitespace-nowrap"
+              >
+                {t('listProperty')}
+              </Link>
+
+              {isAuthenticated && <NotificationDropdown />}
+
+              {isAuthenticated && (
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center gap-2 bg-[#C9A96A] text-[#1C1A17] px-4 py-2 rounded-full hover:bg-[#B78F4A] transition-colors text-[13px]"
                   >
-                    {t('signIn')}
-                  </Link>
-                  <Link
-                    href="/register"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block bg-[#C9A96A] text-[#1C1A17] px-4 py-2 rounded-full text-center"
-                  >
-                    {t('getStarted')}
-                  </Link>
-                </>
+                    <User size={16} />
+                    <span>{user?.firstName || t('account')}</span>
+                    <ChevronDown size={14} className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-[#E8E1D7] py-2 z-50">
+                      <div className="px-4 py-2.5 border-b border-[#E8E1D7] flex items-center justify-between">
+                        <span className="text-sm text-[#5F5448]">{user?.firstName} {user?.lastName}</span>
+                        <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full ${
+                          user?.role === 'PLATFORM_ADMIN' ? 'bg-red-100 text-red-700' :
+                          user?.role === 'AGENCY_ADMIN' ? 'bg-purple-100 text-purple-700' :
+                          user?.role === 'AGENT' ? 'bg-blue-100 text-blue-700' :
+                          user?.role === 'SELLER' ? 'bg-amber-100 text-amber-700' :
+                          'bg-[#F4EFE8] text-[#7A6E60]'
+                        }`}>
+                          {user?.role === 'PLATFORM_ADMIN' ? 'Admin' :
+                           user?.role === 'AGENCY_ADMIN' ? 'Agency' :
+                           user?.role === 'AGENT' ? 'Agent' :
+                           user?.role === 'SELLER' ? 'Seller' : 'Buyer'}
+                        </span>
+                      </div>
+                      <Link href="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                        <User size={16} /><span>My Profile</span>
+                      </Link>
+                      <Link href="/my-listings" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                        <FileText size={16} /><span>My Listings</span>
+                      </Link>
+                      <Link href="/open-houses" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                        <span>Open Houses</span>
+                      </Link>
+                      <Link href="/offers" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                        <span>Offers</span>
+                      </Link>
+                      <Link href="/documents" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                        <FileText size={16} /><span>Documents</span>
+                      </Link>
+                      <Link href="/messages" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <span>Messages</span>
+                      </Link>
+                      <Link href="/profile" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                        <Heart size={16} /><span>Saved Properties</span>
+                      </Link>
+                      <Link href="/subscriptions" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                        <span>Subscription</span>
+                      </Link>
+                      <Link href="/list-property" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                        <Plus size={16} /><span>List Property</span>
+                      </Link>
+                      {(user?.role === 'ADMIN' || user?.role === 'PLATFORM_ADMIN' || user?.role === 'AGENT' || user?.role === 'SELLER' || user?.role === 'AGENCY_ADMIN') && (
+                        <Link href="/dashboard" onClick={() => setIsDropdownOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-[#2B2620] hover:bg-[#F4EFE8] transition-colors text-sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                          <span>Dashboard</span>
+                        </Link>
+                      )}
+                      <div className="border-t border-[#E8E1D7] my-1" />
+                      <button
+                        onClick={() => { logout(); setIsDropdownOpen(false); }}
+                        className="flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-[#F4EFE8] transition-colors w-full text-left text-sm"
+                      >
+                        <LogOut size={16} /><span>Logout</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
+
+            {/* ── Mobile hamburger ── */}
+            <button
+              className="lg:hidden ml-3 p-2 text-[#2B2620]"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? (
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
-        )}
-      </nav>
-    </header>
-    <PreferencesPanel
-      isOpen={isPreferencesOpen}
-      onClose={() => setIsPreferencesOpen(false)}
-    />
+
+          {/* ── Mobile Menu ── */}
+          {isMenuOpen && (
+            <div className="lg:hidden border-t border-[#E8E1D7] py-4 space-y-1">
+              {NAV_GROUPS.map(group => (
+                <div key={group.label} className="pb-2">
+                  <p className="px-3 py-1 text-[11px] uppercase tracking-[0.15em] text-[#C9A96A] font-medium">{group.label}</p>
+                  {group.items.map(item => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`block px-3 py-2 text-sm rounded-lg transition-colors hover:bg-[#F6F2EC] ${
+                        (item as { gold?: boolean }).gold ? 'text-[#C9A96A] font-medium' : 'text-[#2B2620]'
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+              <div className="border-t border-[#E8E1D7] pt-3 space-y-1">
+                <Link href="/list-property" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-sm font-medium text-[#C9A96A]">
+                  List a Property
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { setIsPreferencesOpen(true); setIsMenuOpen(false); }}
+                  className="block w-full text-left px-3 py-2 text-sm text-[#2B2620]"
+                >
+                  {t('preferences')}
+                </button>
+                {isAuthenticated ? (
+                  <>
+                    <Link href="/profile" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-sm text-[#2B2620]">My Profile</Link>
+                    <Link href="/dashboard" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-sm text-[#2B2620]">Dashboard</Link>
+                    <button onClick={() => { logout(); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-2 text-sm text-red-600">
+                      {t('logout')}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/login" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-sm text-[#2B2620]">{t('signIn')}</Link>
+                    <Link href="/register" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-sm bg-[#C9A96A] text-[#1C1A17] rounded-full text-center mt-2">{t('getStarted')}</Link>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </nav>
+      </header>
+
+      <PreferencesPanel isOpen={isPreferencesOpen} onClose={() => setIsPreferencesOpen(false)} />
     </>
   );
 }

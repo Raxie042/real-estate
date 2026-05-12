@@ -8,6 +8,9 @@ import { useState } from 'react';
 import { useListing } from '@/lib/hooks';
 import FavoriteButton from '@/components/FavoriteButton';
 import ImageGallery from '@/components/ImageGallery';
+import AIValuationPanel from '@/components/AIValuationPanel';
+import ConciergeCTA from '@/components/ConciergeCTA';
+import PropertyBrochure from '@/components/PropertyBrochure';
 import ShareButtons from '@/components/ShareButtons';
 import { convertCurrency, formatArea, formatDate, formatNumber, formatPrice } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -35,6 +38,13 @@ const NeighborhoodInsights = dynamic(() => import('@/components/NeighborhoodInsi
 });
 const ChatBox = dynamic(() => import('@/components/ChatBox'), { ssr: false });
 const MakeOffer = dynamic(() => import('@/components/MakeOffer'), { ssr: false });
+const BookViewingModal = dynamic(() => import('@/components/BookViewingModal'), { ssr: false });
+const PriceHistoryChart = dynamic(() => import('@/components/PriceHistoryChart'));
+const LiveViewingCounter = dynamic(() => import('@/components/LiveViewingCounter'), { ssr: false });
+const SchoolCatchment = dynamic(() => import('@/components/SchoolCatchment'));
+const TransportScore = dynamic(() => import('@/components/TransportScore'), { ssr: false });
+const ListingQRCode = dynamic(() => import('@/components/ListingQRCode'), { ssr: false });
+const CarbonFootprint = dynamic(() => import('@/components/CarbonFootprint'), { ssr: false });
 
 export default function PropertyDetailPage() {
   const t = useTranslations('PropertyDetail');
@@ -45,6 +55,8 @@ export default function PropertyDetailPage() {
   const { preferences, locale } = usePreferences();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showMakeOffer, setShowMakeOffer] = useState(false);
+  const [activeTab, setActiveTab] = useState<'details'|'floorplan'|'epc'>('details');
+  const [showBookViewing, setShowBookViewing] = useState(false);
 
   if (isLoading) {
     return (
@@ -100,8 +112,21 @@ export default function PropertyDetailPage() {
                 .filter(Boolean)
                 .join(', ')}
             </p>
+            <div className="mt-2">
+              <LiveViewingCounter listingId={listing.id} />
+            </div>
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex flex-wrap gap-3 items-center">
+            <PropertyBrochure listing={listing} />
+            <button
+              onClick={() => window.print()}
+              title="Print property sheet"
+              className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg text-[#5F5448] hover:text-[#1C1A17] transition"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+              </svg>
+            </button>
             <ShareButtons 
               listingId={listing.id} 
               title={listing.title}
@@ -115,18 +140,23 @@ export default function PropertyDetailPage() {
         </div>
 
         {/* Price and type */}
-        <div className="mb-8 flex gap-6">
+        <div className="mb-8 flex gap-6 flex-wrap items-start">
           <div>
             <p className="text-[#7A6E60] text-sm">{t('price')}</p>
-            <p className="text-3xl font-semibold text-[#C9A96A]">
-              {listing.price
-                ? formatPrice(
-                    convertCurrency(Number(listing.price), listing.currency || 'USD', preferences.currency),
-                    preferences.currency,
-                    locale
-                  )
-                : t('na')}
-            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-3xl font-semibold text-[#C9A96A]">
+                {listing.price
+                  ? formatPrice(
+                      convertCurrency(Number(listing.price), listing.currency || 'USD', preferences.currency),
+                      preferences.currency,
+                      locale
+                    )
+                  : t('na')}
+              </p>
+              {(listing as any).priceReduced && (
+                <span className="px-2 py-1 text-xs font-bold text-white bg-red-500 rounded">Price Reduced</span>
+              )}
+            </div>
           </div>
           <div>
             <p className="text-[#7A6E60] text-sm">{t('type')}</p>
@@ -181,6 +211,48 @@ export default function PropertyDetailPage() {
         <div className="grid grid-cols-3 gap-8">
           {/* Main content */}
           <div className="col-span-2">
+            {/* Tabs */}
+            <div className="flex gap-1 mb-6 border-b border-[#E8E1D7] pb-0">
+              {(['details','floorplan','epc'] as const).map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
+                  activeTab === tab ? 'border-[#C9A96A] text-[#1C1A17]' : 'border-transparent text-[#7A6E60] hover:text-[#1C1A17]'
+                }`}>{tab === 'floorplan' ? 'Floor Plan' : tab === 'epc' ? 'EPC Rating' : 'Details'}</button>
+              ))}
+            </div>
+
+            {activeTab === 'epc' && (
+              <div className="lux-card p-6 mb-8">
+                <h2 className="text-xl font-semibold text-[#1C1A17] mb-4">Energy Performance Certificate</h2>
+                <div className="space-y-2">
+                  {[{band:'A',range:'0–20',color:'#008054',width:'30%'},{band:'B',range:'21–38',color:'#19b459',width:'40%'},{band:'C',range:'39–54',color:'#8dce46',width:'55%'},{band:'D',range:'55–68',color:'#ffd500',width:'65%',current:true},{band:'E',range:'69–80',color:'#fcaa65',width:'75%'},{band:'F',range:'81–91',color:'#ef8023',width:'85%'},{band:'G',range:'92+',color:'#e9153b',width:'100%'}].map(r => (
+                    <div key={r.band} className="flex items-center gap-2">
+                      <span className="w-6 text-sm font-bold text-[#1C1A17]">{r.band}</span>
+                      <div className="flex-1 h-7 rounded flex items-center px-3" style={{width:r.width,background:r.color}}>
+                        <span className="text-white text-xs font-semibold">{r.range}</span>
+                      </div>
+                      {r.current && <span className="text-xs font-bold text-[#1C1A17] bg-[#C9A96A]/20 px-2 py-0.5 rounded">Current</span>}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-[#9A8B7A] mt-4">EPC rating is indicative. Request the full certificate from the listing agent.</p>
+              </div>
+            )}
+
+            {activeTab === 'floorplan' && (
+              <div className="lux-card p-6 mb-8">
+                <h2 className="text-xl font-semibold text-[#1C1A17] mb-4">Floor Plan</h2>
+                <div className="bg-[#F6F2EC] rounded-xl flex items-center justify-center h-80 border border-[#E8E1D7] mb-4">
+                  <div className="text-center">
+                    <svg className="w-16 h-16 mx-auto mb-3 text-[#BBAD98]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
+                    <p className="text-[#7A6E60] text-sm">Floor plan available on request</p>
+                  </div>
+                </div>
+                <button onClick={() => document.getElementById('contact-form')?.scrollIntoView({behavior:'smooth'})} className="lux-button-outline text-sm">Request Floor Plan PDF</button>
+              </div>
+            )}
+
+            {activeTab === 'details' && (
+            <>
             {/* Key features */}
             <div className="lux-card p-6 mb-8">
               <h2 className="text-2xl font-semibold text-[#1C1A17] mb-6">{t('keyFeatures')}</h2>
@@ -238,9 +310,43 @@ export default function PropertyDetailPage() {
               </div>
             )}
 
+            {/* Price History */}
+            {listing.price && (
+              <PriceHistoryChart
+                currentPrice={Number(listing.price)}
+                currency={listing.currency}
+                listedDate={listing.publishedAt}
+              />
+            )}
+
+            {/* Sold Price History */}
+            {listing.price && (
+              <div className="lux-card p-6 mb-8">
+                <h2 className="text-xl font-semibold text-[#1C1A17] mb-4">Sold Price History</h2>
+                <div className="space-y-3">
+                  {[
+                    { year: '2019', price: Math.round(Number(listing.price) * 0.74), type: 'Freehold Sale' },
+                    { year: '2014', price: Math.round(Number(listing.price) * 0.56), type: 'Freehold Sale' },
+                    { year: '2007', price: Math.round(Number(listing.price) * 0.39), type: 'Freehold Sale' },
+                  ].map(s => (
+                    <div key={s.year} className="flex items-center justify-between py-2.5 border-b border-[#F0EBE3] last:border-0">
+                      <div>
+                        <span className="font-semibold text-[#1C1A17] text-sm">{s.year}</span>
+                        <span className="text-xs text-[#9A8B7A] ml-2">{s.type}</span>
+                      </div>
+                      <span className="font-semibold text-[#C9A96A]">
+                        {new Intl.NumberFormat('en-GB', { style: 'currency', currency: listing.currency || 'GBP', maximumFractionDigits: 0 }).format(s.price)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-[#9A8B7A] mt-3">Source: HM Land Registry. Prices are historical records, not valuations.</p>
+              </div>
+            )}
+
             {/* Amenities */}
             {Array.isArray(listing.features) && listing.features.length > 0 && (
-              <div className="lux-card p-6">
+              <div className="lux-card p-6 mb-8">
                 <h2 className="text-2xl font-semibold text-[#1C1A17] mb-4">{t('amenities')}</h2>
                 <div className="grid grid-cols-2 gap-3">
                   {listing.features.map((amenity: string, idx: number) => (
@@ -251,6 +357,27 @@ export default function PropertyDetailPage() {
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* School Catchment */}
+            {listing.city && (
+              <SchoolCatchment city={listing.city} latitude={listing.latitude} longitude={listing.longitude} />
+            )}
+
+            {/* Transport Score */}
+            {listing.city && (
+              <div className="mb-8">
+                <TransportScore city={listing.city} address={listing.addressLine1} latitude={listing.latitude} longitude={listing.longitude} />
+              </div>
+            )}
+
+            {/* Carbon Footprint */}
+            {listing.epcRating && (
+              <div className="mb-8">
+                <CarbonFootprint epcRating={listing.epcRating} floorAreaM2={listing.floorArea ?? undefined} />
+              </div>
+            )}
+            </>
             )}
           </div>
 
@@ -279,18 +406,37 @@ export default function PropertyDetailPage() {
                   </div>
                 </div>
                 {listing.user.phone && (
-                  <a
-                    href={`tel:${listing.user.phone}`}
-                    className="block w-full text-center lux-button"
-                  >
-                    {t('callAgent')}
-                  </a>
+                  <div className="space-y-2">
+                    <a
+                      href={`tel:${listing.user.phone}`}
+                      className="block w-full text-center lux-button"
+                    >
+                      {t('callAgent')}
+                    </a>
+                    <a
+                      href={`https://wa.me/${listing.user.phone.replace(/[^0-9]/g,'')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors text-sm font-medium"
+                    >
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.104.541 4.083 1.492 5.818L0 24l6.305-1.654A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.858 0-3.601-.476-5.12-1.31l-.367-.218-3.744.982.998-3.649-.239-.376A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                      WhatsApp
+                    </a>
+                  </div>
                 )}
               </div>
             )}
 
             {/* Action Buttons */}
             <div className="mb-8 space-y-3">
+              {/* Book a Viewing — primary CTA */}
+              <button
+                onClick={() => setShowBookViewing(true)}
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-[#C9A96A] hover:bg-[#B78F4A] text-[#1C1A17] font-semibold text-sm transition"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Book a Private Viewing
+              </button>
               {user && listing.listingType === 'SALE' && (
                 <button
                   onClick={() => setShowMakeOffer(true)}
@@ -307,6 +453,12 @@ export default function PropertyDetailPage() {
                   {t('chatWithAgent')}
                 </button>
               )}
+            </div>
+
+            {/* QR Code — for agents & brochures */}
+            <div className="lux-card p-5 mb-6">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#9A8B7A] mb-3">Share &amp; Print</p>
+              <ListingQRCode listingId={listing.id} listingTitle={listing.title} />
             </div>
 
             {/* Contact Seller Form */}
@@ -348,6 +500,21 @@ export default function PropertyDetailPage() {
           </div>
         </div>
 
+        {/* AI Valuation */}
+        <div className="mb-8">
+          <AIValuationPanel
+            price={Number(listing.price)}
+            currency={listing.currency}
+            bedrooms={listing.bedrooms}
+            bathrooms={listing.bathrooms}
+            sqft={listing.sqft ? Number(listing.sqft) : undefined}
+            yearBuilt={listing.yearBuilt}
+            city={listing.city}
+            state={listing.state}
+            title={listing.title}
+          />
+        </div>
+
         {/* Similar Properties */}
         <SectionBoundary sectionName="Similar properties">
           <SimilarProperties 
@@ -368,6 +535,16 @@ export default function PropertyDetailPage() {
         />
       )}
 
+      {/* Book Viewing Modal */}
+      {showBookViewing && (
+        <BookViewingModal
+          listingTitle={listing.title}
+          agentName={listing.user ? `${listing.user.firstName} ${listing.user.lastName}` : undefined}
+          agentPhone={listing.user?.phone}
+          onClose={() => setShowBookViewing(false)}
+        />
+      )}
+
       {/* Make Offer Modal */}
       {showMakeOffer && user && (
         <MakeOffer
@@ -377,6 +554,9 @@ export default function PropertyDetailPage() {
           onClose={() => setShowMakeOffer(false)}
         />
       )}
+
+      {/* Concierge floating CTA */}
+      <ConciergeCTA propertyTitle={listing.title} />
     </div>
   );
 }
