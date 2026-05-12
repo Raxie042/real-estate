@@ -102,7 +102,7 @@ function LoginPageContent() {
   };
 
   const handleSocialLogin = (provider: 'google' | 'apple' | 'linkedin' | 'microsoft') => {
-    const state = encodeURIComponent(loginRedirectTarget);
+    const state = loginRedirectTarget ? encodeURIComponent(loginRedirectTarget) : '';
     window.location.href = `${apiBase}/api/auth/${provider}?state=${state}`;
   };
 
