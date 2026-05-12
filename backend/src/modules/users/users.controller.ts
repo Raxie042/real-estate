@@ -15,7 +15,12 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Put('profile')
   async updateProfile(@Request() req, @Body() data: any) {
-    return this.usersService.update(req.user.id, data);
+    // Strip fields that must never be user-controlled to prevent privilege escalation
+    const { id, role, email, emailVerified, passwordHash, googleId, appleId, linkedinId, microsoftId, createdAt, updatedAt, agencyId, ...safeData } = data;
+    void id; void role; void email; void emailVerified; void passwordHash;
+    void googleId; void appleId; void linkedinId; void microsoftId;
+    void createdAt; void updatedAt; void agencyId;
+    return this.usersService.update(req.user.id, safeData);
   }
 
   @UseGuards(JwtAuthGuard)

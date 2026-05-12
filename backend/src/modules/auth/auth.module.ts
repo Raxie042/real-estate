@@ -36,7 +36,7 @@ const hasAppleOAuthConfig =
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'dev-secret',
+        secret: configService.get<string>('JWT_SECRET') ?? (() => { throw new Error('JWT_SECRET environment variable is required but not set'); })(),
         signOptions: {
           expiresIn: configService.get<string>('JWT_EXPIRES_IN', '7d') as StringValue,
         },
