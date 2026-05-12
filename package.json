@@ -38,11 +38,16 @@
     "npm": ">=10.0.0"
   },
   "dependencies": {
+    "eslint-config-next": "^15.5.18",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "qs": "^6.15.0"
   },
   "overrides": {
-    "qs": "^6.15.0"
+    "qs": "^6.15.0",
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "9.0.7"
+    },
+    "postcss@<8.5.10": "8.5.14"
   }
 }
