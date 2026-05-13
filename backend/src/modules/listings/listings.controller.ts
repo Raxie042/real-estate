@@ -66,6 +66,11 @@ export class ListingsController {
     });
   }
 
+  @Get('counts')
+  async getPropertyTypeCounts() {
+    return this.listingsService.getPropertyTypeCounts();
+  }
+
   @Get('my-listings')
   @UseGuards(JwtAuthGuard)
   async getMyListings(@Request() req, @Query() query: any) {

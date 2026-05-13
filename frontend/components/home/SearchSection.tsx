@@ -22,41 +22,16 @@ export default function SearchSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPropertyCounts = async () => {
-      try {
-        // Fetch listings to group by type
-        const response = await api.listings.getAll({ limit: 1000 });
-        const listings = response.data.listings || [];
-        
-        // Count listings by type
-        const counts = {
-          houses: 0,
-          apartments: 0,
-          commercial: 0,
-          land: 0,
-        };
-
-        listings.forEach((listing: any) => {
-          const type = listing.propertyType?.toLowerCase() || 'houses';
-          if (type in counts) {
-            counts[type as keyof typeof counts]++;
-          }
-        });
-
-        // Update categories with actual counts
+    api.listings.getCounts()
+      .then(res => {
+        const counts = res.data as Record<string, number>;
         setCategories(prev => prev.map(cat => ({
           ...cat,
-          count: counts[cat.type as keyof typeof counts].toLocaleString(),
+          count: (counts[cat.type] ?? 0).toLocaleString(),
         })));
-      } catch (error) {
-        console.error('Failed to fetch property counts:', error);
-        // Keep default counts on error
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPropertyCounts();
+      })
+      .catch(() => { /* keep default counts */ })
+      .finally(() => setLoading(false));
   }, []);
 
   return (

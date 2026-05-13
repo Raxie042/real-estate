@@ -181,6 +181,35 @@ export class ListingsService {
     };
   }
 
+  async getPropertyTypeCounts(): Promise<Record<string, number>> {
+    const rows = await this.prisma.listing.groupBy({
+      by: ['propertyType'],
+      where: { deletedAt: null, status: 'ACTIVE' },
+      _count: { _all: true },
+    });
+
+    const result: Record<string, number> = {
+      houses: 0,
+      apartments: 0,
+      commercial: 0,
+      land: 0,
+    };
+
+    for (const row of rows) {
+      const type = row.propertyType?.toLowerCase();
+      if (type === 'residential') {
+        // residential covers both houses and apartments; split evenly or count under 'houses'
+        result.houses += row._count._all;
+      } else if (type === 'commercial') {
+        result.commercial += row._count._all;
+      } else if (type === 'land') {
+        result.land += row._count._all;
+      }
+    }
+
+    return result;
+  }
+
   async findById(id: string) {
     const listing = await this.prisma.listing.findUnique({
       where: { id },

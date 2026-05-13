@@ -44,6 +44,7 @@ export const api = {
   
   listings: {
     getAll: (params?: any) => apiClient.get('/listings', { params }),
+    getCounts: () => apiClient.get('/listings/counts'),
     getMine: (params?: any) => apiClient.get('/listings/my-listings', { params }),
     getById: (id: string) => apiClient.get(`/listings/${id}`),
     getBySlug: (slug: string) => apiClient.get(`/listings/slug/${slug}`),

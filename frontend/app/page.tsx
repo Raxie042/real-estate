@@ -1,19 +1,18 @@
 import Hero from '@/components/home/Hero';
 import BrandMessage from '@/components/home/BrandMessage';
-import PopularCities from '@/components/home/PopularCities';
-import LifestyleCollection from '@/components/home/LifestyleCollection';
 import FeaturedListings from '@/components/home/FeaturedListings';
-import EditorialContent from '@/components/home/EditorialContent';
-import CollectionsPreview from '@/components/home/CollectionsPreview';
 import PropertyOfTheWeek from '@/components/home/PropertyOfTheWeek';
 import SocialProof from '@/components/home/SocialProof';
-import PressLogos from '@/components/home/PressLogos';
-import Testimonials from '@/components/home/Testimonials';
-import FeaturedAgents from '@/components/home/FeaturedAgents';
-import AgentRankingsPreview from '@/components/home/AgentRankingsPreview';
-import dynamic from 'next/dynamic';
 import SectionBoundary from '@/components/layout/SectionBoundary';
-const WealthReferralSection = dynamic(() => import('@/components/WealthReferralSection'), { ssr: false });
+import dynamic from 'next/dynamic';
+
+const FeaturedAgents = dynamic(() => import('@/components/home/FeaturedAgents'));
+const PressLogos = dynamic(() => import('@/components/home/PressLogos'));
+const PopularCities = dynamic(() => import('@/components/home/PopularCities'));
+const CollectionsPreview = dynamic(() => import('@/components/home/CollectionsPreview'));
+const LifestyleCollection = dynamic(() => import('@/components/home/LifestyleCollection'));
+const EditorialContent = dynamic(() => import('@/components/home/EditorialContent'));
+const Testimonials = dynamic(() => import('@/components/home/Testimonials'));
 
 export default function HomePage() {
   return (
@@ -23,9 +22,6 @@ export default function HomePage() {
       </SectionBoundary>
       <SectionBoundary sectionName="Brand message">
         <BrandMessage />
-      </SectionBoundary>
-      <SectionBoundary sectionName="Agent rankings">
-        <AgentRankingsPreview />
       </SectionBoundary>
       <SectionBoundary sectionName="Featured listings">
         <FeaturedListings />
@@ -38,9 +34,6 @@ export default function HomePage() {
       </SectionBoundary>
       <SectionBoundary sectionName="Featured agents">
         <FeaturedAgents />
-      </SectionBoundary>
-      <SectionBoundary sectionName="Wealth referral">
-        <WealthReferralSection />
       </SectionBoundary>
       <SectionBoundary sectionName="Press logos">
         <PressLogos />

@@ -55,23 +55,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch user data on mount if token exists
   useEffect(() => {
-    const initAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        setAuthCookie();
-        try {
-          const response = await apiClient.post('/auth/me');
-          setUser(response.data);
-        } catch (error) {
-          // Token invalid, clear it
-          localStorage.removeItem('token');
-          clearAuthCookie();
-        }
-      }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // No token — nothing to verify, unblock render immediately
       setIsLoading(false);
-    };
+      return;
+    }
 
-    initAuth();
+    setAuthCookie();
+    apiClient.post('/auth/me')
+      .then(res => setUser(res.data))
+      .catch(() => {
+        localStorage.removeItem('token');
+        clearAuthCookie();
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const login = async (email: string, password: string): Promise<string | undefined> => {
