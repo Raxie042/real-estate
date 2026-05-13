@@ -4,114 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import ScrollReveal from '@/components/ScrollReveal';
 import { Star, MapPin, Phone, Mail, Award, ChevronRight } from 'lucide-react';
-
-const AGENTS = [
-  {
-    id: '0',
-    name: 'Felix Attah',
-    title: 'Chief Executive Officer & Founder',
-    location: 'Mayfair, London',
-    phone: '+44 20 7123 4567',
-    email: 'felix@raxiezenithestate.com',
-    rating: 5.0,
-    reviews: 112,
-    sales: 180,
-    years: 10,
-    specialties: ['Prime PCL', 'UHNW Clients', 'International'],
-    image: '/images/felix-attah.png',
-    featured: true,
-  },
-  {
-    id: '1',
-    name: 'Alexandra Pemberton',
-    title: 'Senior Luxury Specialist',
-    location: 'London, UK',
-    phone: '+44 20 7123 4567',
-    email: 'a.pemberton@raxieprime.com',
-    rating: 4.9,
-    reviews: 64,
-    sales: 52,
-    years: 14,
-    specialties: ['Mayfair', 'Knightsbridge', 'Off-Market'],
-    image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&q=80',
-    featured: true,
-  },
-  {
-    id: '2',
-    name: 'James Hartwell',
-    title: 'Country Estates Director',
-    location: 'Cotswolds, UK',
-    phone: '+44 20 7123 4568',
-    email: 'j.hartwell@raxieprime.com',
-    rating: 4.8,
-    reviews: 41,
-    sales: 38,
-    years: 11,
-    specialties: ['Country Houses', 'Equestrian', 'New Developments'],
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80',
-    featured: true,
-  },
-  {
-    id: '3',
-    name: 'Sophia Carrington',
-    title: 'Prime Central London',
-    location: 'Chelsea, London',
-    phone: '+44 20 7123 4569',
-    email: 's.carrington@raxieprime.com',
-    rating: 5.0,
-    reviews: 27,
-    sales: 29,
-    years: 8,
-    specialties: ['Chelsea', 'Belgravia', 'Luxury Penthouses'],
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80',
-    featured: false,
-  },
-  {
-    id: '4',
-    name: 'Oliver Ashworth',
-    title: 'Investment & Commercial',
-    location: 'City of London',
-    phone: '+44 20 7123 4570',
-    email: 'o.ashworth@raxieprime.com',
-    rating: 4.7,
-    reviews: 33,
-    sales: 44,
-    years: 16,
-    specialties: ['Investment', 'Commercial', 'BTL Portfolio'],
-    image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&q=80',
-    featured: false,
-  },
-  {
-    id: '5',
-    name: 'Isabella Montague',
-    title: 'International Residential',
-    location: 'Dubai & London',
-    phone: '+971 50 123 4567',
-    email: 'i.montague@raxieprime.com',
-    rating: 4.9,
-    reviews: 19,
-    sales: 21,
-    years: 7,
-    specialties: ['Dubai', 'International', 'Relocation'],
-    image: 'https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=400&q=80',
-    featured: false,
-  },
-  {
-    id: '6',
-    name: 'Edward Blackwood',
-    title: 'New Developments Lead',
-    location: 'Manchester & London',
-    phone: '+44 161 123 4567',
-    email: 'e.blackwood@raxieprime.com',
-    rating: 4.8,
-    reviews: 22,
-    sales: 34,
-    years: 9,
-    specialties: ['New Builds', 'Off-Plan', 'Buy-to-Let'],
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
-    featured: false,
-  },
-];
+import { AGENTS } from '@/lib/agents-data';
 
 export default function AgentsPage() {
   return (
@@ -197,7 +90,7 @@ export default function AgentsPage() {
                     ))}
                   </div>
                   <div className="mt-auto flex items-center justify-between text-sm text-[#5F5448] border-t border-[#E8E1D7] pt-4">
-                    <span>{agent.sales} sales</span>
+                    <span>{agent.deals} sales</span>
                     <span>{agent.years} yrs exp.</span>
                     <span className="text-[#C9A96A] font-medium flex items-center gap-1">
                       View Profile <ChevronRight size={14} />

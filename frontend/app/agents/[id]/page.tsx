@@ -1,30 +1,14 @@
 'use client';
 
 import { use, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Star, MapPin, Mail, Phone, Briefcase, Award, TrendingUp, Home, ChevronRight } from 'lucide-react';
+import { Star, MapPin, Mail, Phone, Award, TrendingUp, Home, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import ScrollReveal from '@/components/ScrollReveal';
-import api from '@/lib/api';
+import { AGENTS } from '@/lib/agents-data';
 
-interface AgentProfile {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  bio?: string;
-  licenseNumber?: string;
-  yearsExperience?: number;
-  specialties?: string[];
-  avatar?: string;
-  agency?: { id: string; name: string; logo?: string };
-  listings: Array<{ id: string; title: string; price: number; isPoa?: boolean; images: string[]; city: string; state: string; status: string }>;
-  stats: { totalListings: number; activeListing: number; totalSales: number; averageRating: number; reviewCount: number };
-  reviews?: Array<{ id: string; rating: number; comment: string; author: string; createdAt: string }>;
-}
+
 
 const AWARDS = [
   { year: '2025', title: 'Top Producer Award', body: 'National Association of Realtors' },
@@ -40,25 +24,29 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
   const [msgText, setMsgText] = useState('');
   const [msgSent, setMsgSent] = useState(false);
 
-  const { data: agent, isLoading } = useQuery<AgentProfile>({
-    queryKey: ['agent', agentId],
-    queryFn: async () => {
-      const response = await api.users?.getProfile?.() || { data: null };
-      return response.data;
-    },
-  });
+  const staticAgent = AGENTS.find(a => a.id === agentId);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F6F2EC]">
-        <div className="space-y-4 w-full max-w-2xl px-8">
-          <div className="h-80 bg-[#EFE8DD] rounded-2xl animate-pulse" />
-          <div className="h-12 bg-[#EFE8DD] rounded-xl animate-pulse w-1/2" />
-          <div className="h-8  bg-[#EFE8DD] rounded-xl animate-pulse w-2/3" />
-        </div>
-      </div>
-    );
-  }
+  const agent = staticAgent ? {
+    id: staticAgent.id,
+    firstName: staticAgent.firstName,
+    lastName: staticAgent.lastName,
+    email: staticAgent.email,
+    phone: staticAgent.phone,
+    bio: staticAgent.bio,
+    licenseNumber: undefined as string | undefined,
+    yearsExperience: staticAgent.years,
+    specialties: staticAgent.specialties,
+    avatar: staticAgent.image,
+    agency: undefined as { id: string; name: string; logo?: string } | undefined,
+    listings: [] as Array<{ id: string; title: string; price: number; isPoa?: boolean; images: string[]; city: string; state: string; status: string }>,
+    stats: {
+      totalListings: staticAgent.deals,
+      activeListing: Math.round(staticAgent.deals * 0.1),
+      totalSales: staticAgent.deals,
+      averageRating: staticAgent.rating,
+      reviewCount: staticAgent.reviews,
+    },
+  } : null;
 
   if (!agent) {
     return (

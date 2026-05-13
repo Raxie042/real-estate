@@ -3,69 +3,10 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import ScrollReveal from '@/components/ScrollReveal';
 import { Star, MapPin, Phone, Mail, Award, ChevronRight, Handshake } from 'lucide-react';
+import { AGENTS as ALL_AGENTS } from '@/lib/agents-data';
 
-const AGENTS = [
-  {
-    id: '0',
-    name: 'Felix Attah',
-    title: 'Chief Executive Officer & Founder',
-    location: 'Mayfair, London',
-    phone: '+44 20 7123 4567',
-    email: 'felix@raxiezenithestate.com',
-    rating: 5.0,
-    reviews: 112,
-    deals: 180,
-    years: 10,
-    specialties: ['Prime PCL', 'UHNW Clients', 'International'],
-    image: '/images/felix-attah.png',
-    isCEO: true,
-  },
-  {
-    id: '1',
-    name: 'Alexandra Pemberton',
-    title: 'Senior Luxury Specialist',
-    location: 'London, UK',
-    phone: '+44 20 7123 4567',
-    email: 'a.pemberton@raxieprime.com',
-    rating: 4.9,
-    reviews: 64,
-    deals: 52,
-    years: 14,
-    specialties: ['Mayfair', 'Knightsbridge', 'Off-Market'],
-    image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=400&q=80',
-    isCEO: false,
-  },
-  {
-    id: '2',
-    name: 'James Hartwell',
-    title: 'Country Estates Director',
-    location: 'Cotswolds, UK',
-    phone: '+44 20 7123 4568',
-    email: 'j.hartwell@raxieprime.com',
-    rating: 4.8,
-    reviews: 41,
-    deals: 38,
-    years: 11,
-    specialties: ['Country Houses', 'Equestrian', 'New Developments'],
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80',
-    isCEO: false,
-  },
-  {
-    id: '3',
-    name: 'Sophia Carrington',
-    title: 'Prime Central London',
-    location: 'Chelsea, London',
-    phone: '+44 20 7123 4569',
-    email: 's.carrington@raxieprime.com',
-    rating: 5.0,
-    reviews: 27,
-    deals: 29,
-    years: 8,
-    specialties: ['Chelsea', 'Belgravia', 'Luxury Penthouses'],
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80',
-    isCEO: false,
-  },
-];
+// Show only the first 4 agents on the home page
+const AGENTS = ALL_AGENTS.slice(0, 4);
 
 export default function FeaturedAgents() {
   return (
