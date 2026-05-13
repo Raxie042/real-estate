@@ -9,6 +9,7 @@ import PropertyOfTheWeek from '@/components/home/PropertyOfTheWeek';
 import SocialProof from '@/components/home/SocialProof';
 import PressLogos from '@/components/home/PressLogos';
 import Testimonials from '@/components/home/Testimonials';
+import FeaturedAgents from '@/components/home/FeaturedAgents';
 import SectionBoundary from '@/components/layout/SectionBoundary';
 
 export default function HomePage() {
@@ -46,6 +47,9 @@ export default function HomePage() {
       </SectionBoundary>
       <SectionBoundary sectionName="Testimonials">
         <Testimonials />
+      </SectionBoundary>
+      <SectionBoundary sectionName="Featured agents">
+        <FeaturedAgents />
       </SectionBoundary>
     </>
   );
