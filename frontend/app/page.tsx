@@ -11,8 +11,9 @@ import PressLogos from '@/components/home/PressLogos';
 import Testimonials from '@/components/home/Testimonials';
 import FeaturedAgents from '@/components/home/FeaturedAgents';
 import AgentRankingsPreview from '@/components/home/AgentRankingsPreview';
+import dynamic from 'next/dynamic';
 import SectionBoundary from '@/components/layout/SectionBoundary';
-import WealthReferralSection from '@/components/WealthReferralSection';
+const WealthReferralSection = dynamic(() => import('@/components/WealthReferralSection'), { ssr: false });
 
 export default function HomePage() {
   return (

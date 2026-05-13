@@ -150,7 +150,7 @@ function getInitialPreferences(): Preferences {
 type PreferencesContextValue = {
   preferences: Preferences;
   locale: string;
-  applyPreferences: (next: Preferences) => void;
+  applyPreferences: (next: Partial<Preferences>) => void;
   options: {
     language: PreferenceOption[];
     currency: PreferenceOption[];
@@ -185,7 +185,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
     () => ({
       preferences,
       locale: languageToLocale(preferences.language),
-      applyPreferences: (next) => {
+      applyPreferences: (next: Partial<Preferences>) => {
         const merged = normalizePreferences({
           ...preferences,
           ...next,

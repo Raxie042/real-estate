@@ -1,7 +1,7 @@
 'use client';
 
 import { use, useState } from 'react';
-import { Star, MapPin, Mail, Phone, Award, TrendingUp, Home, ChevronRight } from 'lucide-react';
+import { Star, MapPin, Mail, Phone, Award, TrendingUp, Home, ChevronRight, Briefcase } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';

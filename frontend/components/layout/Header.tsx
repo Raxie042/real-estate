@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { User, ChevronDown, LogOut, Heart, Plus, FileText, Settings, Globe } from 'lucide-react';
 import { usePreferences, SUPPORTED_LANGUAGES } from '@/lib/preferences-context';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import PreferencesPanel from '@/components/layout/PreferencesPanel';
 import { useTranslations } from 'next-intl';
 import { useWhiteLabel } from '@/lib/white-label-context';
+import { useRouter } from 'next/navigation';
 
 const NAV_GROUPS = [
   {
@@ -99,8 +100,21 @@ export default function Header() {
   const { config } = useWhiteLabel();
   const { user, isAuthenticated, logout } = useAuth();
   const { preferences, applyPreferences } = usePreferences();
+  const router = useRouter();
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+
+  const switchLanguage = useCallback((lang: string) => {
+    applyPreferences({ language: lang });
+    const currentPath = window.location.pathname;
+    const pathWithoutLocale = currentPath.replace(/^\/(en|fr|de|ar|zh|ru|pt)(?=\/|$)/, '') || '/';
+    const query = window.location.search.replace(/^\?/, '');
+    const nextPath = `/${lang}${pathWithoutLocale}`;
+    const target = query ? `${nextPath}?${query}` : nextPath;
+    router.replace(target);
+    router.refresh();
+    setLangOpen(false);
+  }, [applyPreferences, router]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
@@ -193,7 +207,7 @@ export default function Header() {
                       <button
                         key={lang}
                         type="button"
-                        onClick={() => { applyPreferences({ language: lang }); setLangOpen(false); }}
+                        onClick={() => switchLanguage(lang)}
                         className={`w-full text-left px-4 py-2 text-xs transition-colors hover:bg-[#F6F2EC] ${
                           preferences.language === lang ? 'text-[#C9A96A] font-semibold' : 'text-[#2B2620]'
                         }`}

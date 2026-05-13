@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const PUBLIC_FILE = /\.(.*)$/;
 const AUTH_COOKIE = 'raxie-auth-token';
-const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'ar'] as const;
+const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'ar', 'zh', 'ru', 'pt'] as const;
 const PROTECTED_PATHS = [
   '/valuation',
   '/offers',

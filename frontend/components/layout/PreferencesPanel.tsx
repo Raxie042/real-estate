@@ -40,7 +40,7 @@ export default function PreferencesPanel({ isOpen, onClose }: PreferencesPanelPr
   const apply = () => {
     applyPreferences(draftPreferences);
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : pathname || '/';
-    const pathWithoutLocale = currentPath.replace(/^\/(en|fr|de|ar)(?=\/|$)/, '') || '/';
+    const pathWithoutLocale = currentPath.replace(/^\/(en|fr|de|ar|zh|ru|pt)(?=\/|$)/, '') || '/';
     const query = typeof window !== 'undefined' ? window.location.search.replace(/^\?/, '') : '';
     const safeLanguage = SUPPORTED_LANGUAGES.includes(draftPreferences.language as any)
       ? draftPreferences.language
@@ -63,21 +63,6 @@ export default function PreferencesPanel({ isOpen, onClose }: PreferencesPanelPr
   };
 
   const rows: Array<{ key: keyof Preferences; label: string; choices: { value: string; label: string }[] }> = [
-    {
-      key: 'language',
-      label: t('language'),
-      choices: options.language.map((option) => ({
-        value: option.value,
-        label:
-          option.value === 'en'
-            ? t('languageEnglish')
-            : option.value === 'fr'
-            ? t('languageFrench')
-            : option.value === 'de'
-            ? t('languageGerman')
-            : t('languageArabic'),
-      })),
-    },
     {
       key: 'currency',
       label: t('currency'),
@@ -109,7 +94,7 @@ export default function PreferencesPanel({ isOpen, onClose }: PreferencesPanelPr
     <div className="fixed inset-0 z-[120] bg-black/50 flex items-start md:items-center justify-center p-4">
       <div className="w-full max-w-xl max-h-[85vh] overflow-y-auto rounded-2xl border border-[#E8E1D7] bg-gradient-to-b from-[#F8F4EE] to-[#F1E8DA] shadow-2xl">
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#E8E1D7]">
-          <h2 className="text-2xl text-[#1C1A17] lux-heading">{t('title')}</h2>
+          <h2 className="text-2xl text-[#1C1A17] lux-heading">Display Preferences</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-white/60 transition"
