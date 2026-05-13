@@ -10,6 +10,7 @@ import SocialProof from '@/components/home/SocialProof';
 import PressLogos from '@/components/home/PressLogos';
 import Testimonials from '@/components/home/Testimonials';
 import FeaturedAgents from '@/components/home/FeaturedAgents';
+import AgentRankingsPreview from '@/components/home/AgentRankingsPreview';
 import SectionBoundary from '@/components/layout/SectionBoundary';
 
 export default function HomePage() {
@@ -20,6 +21,9 @@ export default function HomePage() {
       </SectionBoundary>
       <SectionBoundary sectionName="Brand message">
         <BrandMessage />
+      </SectionBoundary>
+      <SectionBoundary sectionName="Agent rankings">
+        <AgentRankingsPreview />
       </SectionBoundary>
       <SectionBoundary sectionName="Featured listings">
         <FeaturedListings />
