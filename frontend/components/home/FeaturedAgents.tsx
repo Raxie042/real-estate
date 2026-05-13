@@ -10,16 +10,16 @@ const AGENTS = ALL_AGENTS.slice(0, 4);
 
 export default function FeaturedAgents() {
   return (
-    <section className="bg-[#F6F2EC] py-24">
+    <section className="bg-[#1C1A17] py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Section header */}
         <ScrollReveal>
           <div className="text-center mb-14">
             <p className="text-xs uppercase tracking-[0.5em] text-[#C9A96A] mb-3">Our Specialists</p>
-            <h2 className="text-4xl md:text-5xl font-light text-[#1C1A17] lux-heading mb-4">Meet the Team</h2>
+            <h2 className="text-4xl md:text-5xl font-light text-white lux-heading mb-4">Meet the Team</h2>
             <div className="w-16 h-px bg-[#C9A96A] mx-auto mb-5" />
-            <p className="text-[#7A6E60] font-light max-w-xl mx-auto">
+            <p className="text-white/50 font-light max-w-xl mx-auto">
               World-class specialists combining deep local expertise with a relentless commitment to exceptional results.
             </p>
           </div>

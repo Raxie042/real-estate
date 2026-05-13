@@ -30,6 +30,9 @@ export default function HomePage() {
       <SectionBoundary sectionName="Social proof">
         <SocialProof />
       </SectionBoundary>
+      <SectionBoundary sectionName="Featured agents">
+        <FeaturedAgents />
+      </SectionBoundary>
       <SectionBoundary sectionName="Press logos">
         <PressLogos />
       </SectionBoundary>
@@ -47,9 +50,6 @@ export default function HomePage() {
       </SectionBoundary>
       <SectionBoundary sectionName="Testimonials">
         <Testimonials />
-      </SectionBoundary>
-      <SectionBoundary sectionName="Featured agents">
-        <FeaturedAgents />
       </SectionBoundary>
     </>
   );
