@@ -12,6 +12,7 @@ import Testimonials from '@/components/home/Testimonials';
 import FeaturedAgents from '@/components/home/FeaturedAgents';
 import AgentRankingsPreview from '@/components/home/AgentRankingsPreview';
 import SectionBoundary from '@/components/layout/SectionBoundary';
+import WealthReferralSection from '@/components/WealthReferralSection';
 
 export default function HomePage() {
   return (
@@ -36,6 +37,9 @@ export default function HomePage() {
       </SectionBoundary>
       <SectionBoundary sectionName="Featured agents">
         <FeaturedAgents />
+      </SectionBoundary>
+      <SectionBoundary sectionName="Wealth referral">
+        <WealthReferralSection />
       </SectionBoundary>
       <SectionBoundary sectionName="Press logos">
         <PressLogos />

@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { User, ChevronDown, LogOut, Heart, Plus, FileText, Settings } from 'lucide-react';
+import { User, ChevronDown, LogOut, Heart, Plus, FileText, Settings, Globe } from 'lucide-react';
+import { usePreferences, SUPPORTED_LANGUAGES } from '@/lib/preferences-context';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import NotificationDropdown from '@/components/NotificationDropdown';
@@ -30,6 +31,7 @@ const NAV_GROUPS = [
       { label: 'Commercial', href: '/commercial' },
       { label: 'Auctions', href: '/auctions' },
       { label: 'Magazine', href: '/magazine' },
+      { label: 'Preferred Partners', href: '/partners' },
       { label: 'Private Collection ✦', href: '/private', gold: true },
     ],
   },
@@ -96,6 +98,9 @@ export default function Header() {
   const t = useTranslations('Header');
   const { config } = useWhiteLabel();
   const { user, isAuthenticated, logout } = useAuth();
+  const { preferences, applyPreferences } = usePreferences();
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
@@ -118,6 +123,9 @@ export default function Header() {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(event.target as Node)) {
+        setLangOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -167,6 +175,35 @@ export default function Header() {
                 <Settings size={12} />
                 {t('preferences')}
               </button>
+
+              {/* Globe language picker */}
+              <div className="relative" ref={langRef}>
+                <button
+                  type="button"
+                  onClick={() => setLangOpen(v => !v)}
+                  className="flex items-center gap-1 hover:text-[#C9A96A] transition"
+                  aria-label="Change language"
+                >
+                  <Globe size={12} />
+                  <span className="uppercase text-[11px]">{preferences.language}</span>
+                </button>
+                {langOpen && (
+                  <div className="absolute top-full right-0 mt-1 bg-white border border-[#E8E1D7] rounded-xl shadow-lg py-1 z-50 min-w-[130px]">
+                    {SUPPORTED_LANGUAGES.map(lang => (
+                      <button
+                        key={lang}
+                        type="button"
+                        onClick={() => { applyPreferences({ language: lang }); setLangOpen(false); }}
+                        className={`w-full text-left px-4 py-2 text-xs transition-colors hover:bg-[#F6F2EC] ${
+                          preferences.language === lang ? 'text-[#C9A96A] font-semibold' : 'text-[#2B2620]'
+                        }`}
+                      >
+                        {{ en: 'English', fr: 'Français', de: 'Deutsch', ar: 'العربية', zh: '中文', ru: 'Русский', pt: 'Português' }[lang]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               {!isAuthenticated && (
                 <>
                   <Link href="/login" className="hover:text-[#C9A96A] transition">{t('signIn')}</Link>

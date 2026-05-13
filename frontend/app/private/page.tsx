@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import ScrollReveal from '@/components/ScrollReveal';
-import { Lock, Eye, EyeOff, ChevronRight, MapPin, Bed, Bath, Maximize, Shield, Globe, TrendingUp, Users, Briefcase, Key } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { Lock, Eye, EyeOff, ChevronRight, MapPin, Bed, Bath, Maximize, Shield, Globe, TrendingUp, Users, Briefcase, Key, CheckCircle, FileText } from 'lucide-react';
+
+const ESignatureModal = dynamic(() => import('@/components/ESignatureModal'), { ssr: false });
+const WealthReferralSection = dynamic(() => import('@/components/WealthReferralSection'), { ssr: false });
 
 const WEALTH_SERVICES = [
   { icon: Key, title: 'Private Acquisition', desc: 'Exclusive buy-side representation with access to properties never advertised publicly. We act solely in your interest.' },
@@ -90,54 +94,186 @@ const COLLECTIONS = [
   },
 ];
 
-function AccessGate({ onUnlock }: { onUnlock: () => void }) {
-  const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+const NDA_TEXT = (
+  <div className="space-y-3 text-sm text-[#5F5448] leading-relaxed">
+    <p className="font-semibold text-[#1C1A17]">Private Collection — Confidentiality Agreement</p>
+    <p>
+      Access to Raxie Zenith Estate's Private Collection is extended exclusively to clients who have completed our vetting process and agreed to the following terms:
+    </p>
+    <ol className="list-decimal list-inside space-y-2 pl-2">
+      <li>All property details, addresses, ownership information, and pricing disclosed within the Private Collection are strictly confidential.</li>
+      <li>You will not share, reproduce, or discuss any information with any third party without express written consent.</li>
+      <li>Enquiries are made in good faith for personal acquisition or portfolio purposes only.</li>
+      <li>You acknowledge that properties in this collection are not publicly marketed and that their owners have a legitimate expectation of complete privacy.</li>
+      <li>Breach of this agreement may result in legal action and permanent exclusion from our platform.</li>
+      <li>This agreement is governed by English law and subject to the jurisdiction of the English courts.</li>
+    </ol>
+    <p className="text-xs text-[#9A8B7A]">
+      Raxie Zenith Estate Ltd · Registered in England No. 12345678 · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+    </p>
+  </div>
+);
 
-  const handleSubmit = (e: React.FormEvent) => {
+type AccessStep = 'form' | 'nda' | 'done';
+
+function AccessGate({ onUnlock }: { onUnlock: () => void }) {
+  const [step, setStep] = useState<AccessStep>('form');
+  const [form, setForm] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    nationality: '',
+    netWorth: '',
+    budget: '',
+    hearAbout: '',
+  });
+
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(onUnlock, 800);
+    setStep('nda');
+  };
+
+  const handleSigned = () => {
+    setStep('done');
+    setTimeout(onUnlock, 1200);
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="max-w-md mx-auto text-center py-16"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-2xl mx-auto"
     >
-      <div className="w-16 h-16 rounded-full bg-[#C9A96A]/10 flex items-center justify-center mx-auto mb-6">
-        <Lock size={24} className="text-[#C9A96A]" />
-      </div>
-      <p className="text-xs uppercase tracking-[0.5em] text-[#C9A96A] mb-3">Private Collection</p>
-      <h2 className="text-3xl font-light text-[#1C1A17] lux-heading mb-4">Discreet &amp; Off-Market Properties</h2>
-      <div className="w-12 h-px bg-[#C9A96A] mx-auto mb-6" />
-      <p className="text-[#7A6E60] leading-relaxed mb-8">
-        Our private collection features properties whose owners value discretion above all else. Access is extended exclusively to registered clients.
-      </p>
-      {submitted ? (
-        <div className="flex items-center justify-center gap-2 text-[#C9A96A]">
-          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-          <span className="text-sm">Verifying access…</span>
+      {/* Step indicators */}
+      <div className="flex items-center justify-center gap-4 mb-10 text-xs">
+        <div className={`flex items-center gap-1.5 ${step === 'form' ? 'text-[#1C1A17] font-semibold' : 'text-[#C9A96A]'}`}>
+          {step !== 'form' ? <CheckCircle size={14} className="text-[#C9A96A]" /> : <span className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center text-[10px] font-bold">1</span>}
+          Application
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-3 text-left">
-          <input
-            type="email"
-            className="lux-input"
-            placeholder="Your email address"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-          />
-          <button type="submit" className="w-full lux-button flex items-center justify-center gap-2">
-            <Eye size={16} /> Request Access
-          </button>
-          <p className="text-[10px] text-[#9A8B7A] text-center leading-snug">
-            Your details are held in strict confidence. We will never share your information with third parties.
-          </p>
-        </form>
+        <div className="w-8 h-px bg-[#E8E1D7]" />
+        <div className={`flex items-center gap-1.5 ${step === 'nda' ? 'text-[#1C1A17] font-semibold' : step === 'done' ? 'text-[#C9A96A]' : 'text-[#BBAD98]'}`}>
+          {step === 'done' ? <CheckCircle size={14} className="text-[#C9A96A]" /> : <FileText size={14} />}
+          Sign NDA
+        </div>
+        <div className="w-8 h-px bg-[#E8E1D7]" />
+        <div className={`flex items-center gap-1.5 ${step === 'done' ? 'text-[#C9A96A] font-semibold' : 'text-[#BBAD98]'}`}>
+          <Lock size={14} />
+          Access Granted
+        </div>
+      </div>
+
+      {step === 'form' && (
+        <div className="lux-card p-8">
+          <div className="text-center mb-8">
+            <div className="w-14 h-14 rounded-full bg-[#C9A96A]/10 flex items-center justify-center mx-auto mb-4">
+              <Lock size={22} className="text-[#C9A96A]" />
+            </div>
+            <p className="text-xs uppercase tracking-[0.5em] text-[#C9A96A] mb-2">Private Collection</p>
+            <h2 className="text-2xl font-light text-[#1C1A17] lux-heading">Apply for Private Access</h2>
+            <p className="text-[#7A6E60] text-sm mt-2 max-w-md mx-auto leading-relaxed">
+              Complete your private client application. All information is treated with absolute discretion.
+            </p>
+          </div>
+
+          <form onSubmit={handleFormSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-[#7A6E60] mb-1 block">Full Legal Name *</label>
+                <input required className="w-full lux-input" value={form.fullName}
+                  onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
+              </div>
+              <div>
+                <label className="text-xs text-[#7A6E60] mb-1 block">Email Address *</label>
+                <input required type="email" className="w-full lux-input" value={form.email}
+                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-[#7A6E60] mb-1 block">Phone Number</label>
+                <input type="tel" className="w-full lux-input" value={form.phone}
+                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+              </div>
+              <div>
+                <label className="text-xs text-[#7A6E60] mb-1 block">Nationality / Residence</label>
+                <input className="w-full lux-input" placeholder="e.g. British, UAE Resident"
+                  value={form.nationality} onChange={e => setForm(f => ({ ...f, nationality: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-[#7A6E60] mb-1 block">Approximate Net Worth *</label>
+                <select required className="w-full lux-input" value={form.netWorth}
+                  onChange={e => setForm(f => ({ ...f, netWorth: e.target.value }))}>
+                  <option value="">Select range</option>
+                  <option value="5m-10m">£5m – £10m</option>
+                  <option value="10m-25m">£10m – £25m</option>
+                  <option value="25m-50m">£25m – £50m</option>
+                  <option value="50m-100m">£50m – £100m</option>
+                  <option value="100m+">£100m+</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-[#7A6E60] mb-1 block">Property Budget *</label>
+                <select required className="w-full lux-input" value={form.budget}
+                  onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}>
+                  <option value="">Select range</option>
+                  <option value="2m-5m">£2m – £5m</option>
+                  <option value="5m-10m">£5m – £10m</option>
+                  <option value="10m-20m">£10m – £20m</option>
+                  <option value="20m-50m">£20m – £50m</option>
+                  <option value="50m+">£50m+</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-[#7A6E60] mb-1 block">How did you hear about us?</label>
+              <select className="w-full lux-input" value={form.hearAbout}
+                onChange={e => setForm(f => ({ ...f, hearAbout: e.target.value }))}>
+                <option value="">Please select</option>
+                <option value="referral">Client Referral</option>
+                <option value="private-bank">Private Bank Introduction</option>
+                <option value="family-office">Family Office</option>
+                <option value="press">Press / Editorial</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div className="bg-[#F6F2EC] border border-[#E8E1D7] rounded-xl p-4 text-xs text-[#7A6E60] leading-relaxed">
+              <Lock size={11} className="inline mr-1.5 text-[#C9A96A]" />
+              Your application is reviewed by our Private Client team within one business day. All information is held under strict confidentiality.
+            </div>
+
+            <button type="submit" className="w-full lux-button flex items-center justify-center gap-2">
+              Proceed to NDA <ChevronRight size={15} />
+            </button>
+          </form>
+        </div>
       )}
+
+      {step === 'done' && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="lux-card p-12 text-center"
+        >
+          <CheckCircle size={48} className="text-[#C9A96A] mx-auto mb-4" />
+          <h3 className="text-2xl font-light text-[#1C1A17] lux-heading mb-2">Access Granted</h3>
+          <p className="text-[#7A6E60] text-sm">Your NDA has been signed. Unlocking the Private Collection…</p>
+        </motion.div>
+      )}
+
+      {/* NDA modal */}
+      <AnimatePresence>
+        {step === 'nda' && (
+          <ESignatureModal
+            title="Private Collection NDA"
+            agreementText={NDA_TEXT}
+            onSign={handleSigned}
+            onClose={() => setStep('form')}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -264,6 +400,12 @@ export default function PrivatePage() {
           </>
         )}
       </div>
+
+      {/* Wealth Management Referral */}
+      <WealthReferralSection
+        title="Finance Your Acquisition"
+        subtitle="We work with London's most prestigious private banks to structure financing for clients acquiring property of this calibre."
+      />
     </div>
   );
 }

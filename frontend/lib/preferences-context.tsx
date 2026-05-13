@@ -9,7 +9,7 @@ export type Preferences = {
   unitSystem: 'imperial' | 'metric';
 };
 
-export const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'ar'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'ar', 'zh', 'ru', 'pt'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 type PreferenceOption = {
@@ -22,6 +22,9 @@ const LANGUAGE_OPTIONS: PreferenceOption[] = [
   { value: 'fr', label: 'Français' },
   { value: 'de', label: 'Deutsch' },
   { value: 'ar', label: 'العربية' },
+  { value: 'zh', label: '中文' },
+  { value: 'ru', label: 'Русский' },
+  { value: 'pt', label: 'Português' },
 ];
 
 const CURRENCY_OPTIONS: PreferenceOption[] = [

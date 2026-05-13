@@ -38,6 +38,7 @@ const NeighborhoodInsights = dynamic(() => import('@/components/NeighborhoodInsi
 });
 const ChatBox = dynamic(() => import('@/components/ChatBox'), { ssr: false });
 const MakeOffer = dynamic(() => import('@/components/MakeOffer'), { ssr: false });
+const WealthReferralSection = dynamic(() => import('@/components/WealthReferralSection'), { ssr: false });
 const BookViewingModal = dynamic(() => import('@/components/BookViewingModal'), { ssr: false });
 const PriceHistoryChart = dynamic(() => import('@/components/PriceHistoryChart'));
 const LiveViewingCounter = dynamic(() => import('@/components/LiveViewingCounter'), { ssr: false });
@@ -45,6 +46,8 @@ const SchoolCatchment = dynamic(() => import('@/components/SchoolCatchment'));
 const TransportScore = dynamic(() => import('@/components/TransportScore'), { ssr: false });
 const ListingQRCode = dynamic(() => import('@/components/ListingQRCode'), { ssr: false });
 const CarbonFootprint = dynamic(() => import('@/components/CarbonFootprint'), { ssr: false });
+const CinematicVideoTour = dynamic(() => import('@/components/CinematicVideoTour'), { ssr: false });
+const FloorPlan3D = dynamic(() => import('@/components/FloorPlan3D'), { ssr: false });
 
 export default function PropertyDetailPage() {
   const t = useTranslations('PropertyDetail');
@@ -55,7 +58,7 @@ export default function PropertyDetailPage() {
   const { preferences, locale } = usePreferences();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showMakeOffer, setShowMakeOffer] = useState(false);
-  const [activeTab, setActiveTab] = useState<'details'|'floorplan'|'epc'>('details');
+  const [activeTab, setActiveTab] = useState<'details'|'floorplan'|'epc'|'video'>('details');
   const [showBookViewing, setShowBookViewing] = useState(false);
 
   if (isLoading) {
@@ -175,6 +178,17 @@ export default function PropertyDetailPage() {
           </div>
         )}
 
+        {/* Cinematic Video Tour — always shown, uses demo if listing has no video */}
+        <SectionBoundary sectionName="Cinematic video tour">
+          <div className="mb-8">
+            <CinematicVideoTour
+              videoUrl={(listing as any).videoTourUrl || undefined}
+              posterImage={listing.images?.[0]}
+              propertyTitle={listing.title}
+            />
+          </div>
+        </SectionBoundary>
+
         {/* Map */}
         {Number.isFinite(listing.latitude) && Number.isFinite(listing.longitude) && (
           <SectionBoundary sectionName="Property map">
@@ -213,10 +227,10 @@ export default function PropertyDetailPage() {
           <div className="col-span-2">
             {/* Tabs */}
             <div className="flex gap-1 mb-6 border-b border-[#E8E1D7] pb-0">
-              {(['details','floorplan','epc'] as const).map(tab => (
+              {(['details','floorplan','epc','video'] as const).map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
                   activeTab === tab ? 'border-[#C9A96A] text-[#1C1A17]' : 'border-transparent text-[#7A6E60] hover:text-[#1C1A17]'
-                }`}>{tab === 'floorplan' ? 'Floor Plan' : tab === 'epc' ? 'EPC Rating' : 'Details'}</button>
+                }`}>{tab === 'floorplan' ? 'Floor Plan' : tab === 'epc' ? 'EPC Rating' : tab === 'video' ? '🎬 Film Tour' : 'Details'}</button>
               ))}
             </div>
 
@@ -238,16 +252,19 @@ export default function PropertyDetailPage() {
               </div>
             )}
 
+            {activeTab === 'video' && (
+              <div className="mb-8">
+                <CinematicVideoTour
+                  videoUrl={(listing as any).videoTourUrl || undefined}
+                  posterImage={listing.images?.[0]}
+                  propertyTitle={listing.title}
+                />
+              </div>
+            )}
+
             {activeTab === 'floorplan' && (
-              <div className="lux-card p-6 mb-8">
-                <h2 className="text-xl font-semibold text-[#1C1A17] mb-4">Floor Plan</h2>
-                <div className="bg-[#F6F2EC] rounded-xl flex items-center justify-center h-80 border border-[#E8E1D7] mb-4">
-                  <div className="text-center">
-                    <svg className="w-16 h-16 mx-auto mb-3 text-[#BBAD98]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>
-                    <p className="text-[#7A6E60] text-sm">Floor plan available on request</p>
-                  </div>
-                </div>
-                <button onClick={() => document.getElementById('contact-form')?.scrollIntoView({behavior:'smooth'})} className="lux-button-outline text-sm">Request Floor Plan PDF</button>
+              <div className="mb-8">
+                <FloorPlan3D />
               </div>
             )}
 
@@ -467,6 +484,13 @@ export default function PropertyDetailPage() {
                 <ContactSellerForm listingId={listing.id} listingTitle={listing.title} />
               </div>
             </SectionBoundary>
+
+            {/* Private Banking — shown for listings ≥ £5M */}
+            {listing.price >= 5_000_000 && (
+              <div className="mb-8">
+                <WealthReferralSection compact />
+              </div>
+            )}
 
             {/* Open Houses */}
             <SectionBoundary sectionName="Open houses">
