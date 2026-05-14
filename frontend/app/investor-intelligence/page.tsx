@@ -2,26 +2,39 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '@/lib/api';
+import axios from 'axios';
+
+function apiErrorMessage(err: unknown, fallback: string): string {
+  if (axios.isAxiosError(err)) {
+    if (err.response?.status === 401) return 'Session expired — please log in again.';
+    if (err.response?.status === 403) return 'You do not have permission to access this data.';
+    const msg = err.response?.data?.message;
+    if (typeof msg === 'string' && msg) return msg;
+    if (!err.response) return 'Could not reach the server. Check the API is running.';
+  }
+  return fallback;
+}
 
 export default function InvestorIntelligencePage() {
   const [growthLimit, setGrowthLimit] = useState(10);
   const [growthMinListings, setGrowthMinListings] = useState(5);
   const [growthLoading, setGrowthLoading] = useState(false);
   const [growthData, setGrowthData] = useState<any[]>([]);
+  const [growthError, setGrowthError] = useState('');
 
   const [roiCountriesText, setRoiCountriesText] = useState('US, UK, United Arab Emirates');
   const [roiInvestment, setRoiInvestment] = useState(750000);
   const [roiYears, setRoiYears] = useState(5);
   const [roiLoading, setRoiLoading] = useState(false);
   const [roiData, setRoiData] = useState<any[]>([]);
+  const [roiError, setRoiError] = useState('');
 
   const [dealCountriesText, setDealCountriesText] = useState('US, UK');
   const [dealMinBeds, setDealMinBeds] = useState(3);
   const [dealMinPrice, setDealMinPrice] = useState(1000000);
   const [dealLoading, setDealLoading] = useState(false);
   const [dealData, setDealData] = useState<any[]>([]);
-
-  const [error, setError] = useState('');
+  const [dealError, setDealError] = useState('');
 
   const roiCountries = useMemo(
     () =>
@@ -43,15 +56,15 @@ export default function InvestorIntelligencePage() {
 
   const loadGrowth = async () => {
     setGrowthLoading(true);
-    setError('');
+    setGrowthError('');
     try {
       const response = await api.ai.getGlobalGrowthAreas({
         limit: growthLimit,
         minListings: growthMinListings,
       });
       setGrowthData(response.data?.areas || []);
-    } catch {
-      setError('Failed to load global growth predictions.');
+    } catch (err) {
+      setGrowthError(apiErrorMessage(err, 'Failed to load global growth predictions.'));
       setGrowthData([]);
     } finally {
       setGrowthLoading(false);
@@ -60,7 +73,7 @@ export default function InvestorIntelligencePage() {
 
   const loadRoi = async () => {
     setRoiLoading(true);
-    setError('');
+    setRoiError('');
     try {
       const response = await api.ai.compareGlobalRoi({
         investmentAmount: roiInvestment,
@@ -69,8 +82,8 @@ export default function InvestorIntelligencePage() {
         listingType: 'SALE',
       });
       setRoiData(response.data?.comparisons || []);
-    } catch {
-      setError('Failed to load ROI comparison.');
+    } catch (err) {
+      setRoiError(apiErrorMessage(err, 'Failed to load ROI comparison.'));
       setRoiData([]);
     } finally {
       setRoiLoading(false);
@@ -79,7 +92,7 @@ export default function InvestorIntelligencePage() {
 
   const loadDeals = async () => {
     setDealLoading(true);
-    setError('');
+    setDealError('');
     try {
       const response = await api.ai.getOffMarketLuxuryDeals({
         countries: dealCountries,
@@ -88,8 +101,8 @@ export default function InvestorIntelligencePage() {
         limit: 25,
       });
       setDealData(response.data?.deals || []);
-    } catch {
-      setError('Failed to load off-market luxury deals.');
+    } catch (err) {
+      setDealError(apiErrorMessage(err, 'Failed to load off-market luxury deals.'));
       setDealData([]);
     } finally {
       setDealLoading(false);
@@ -111,7 +124,6 @@ export default function InvestorIntelligencePage() {
           <p className="text-[#7A6E60] mt-2">
             Global growth prediction, instant cross-country ROI benchmarking, and automated off-market luxury deal discovery.
           </p>
-          {error ? <p className="text-red-600 mt-3 text-sm">{error}</p> : null}
         </header>
 
         <section className="lux-card p-6">
@@ -140,6 +152,7 @@ export default function InvestorIntelligencePage() {
             </div>
           </div>
 
+          {growthError ? <p className="text-red-600 text-sm mb-3">{growthError}</p> : null}
           <div className="overflow-auto rounded-lg border border-[#E8E1D7]">
             <table className="w-full text-sm">
               <thead className="bg-[#F6F2EC]">
@@ -204,6 +217,7 @@ export default function InvestorIntelligencePage() {
             </button>
           </div>
 
+          {roiError ? <p className="text-red-600 text-sm mb-3">{roiError}</p> : null}
           <div className="overflow-auto rounded-lg border border-[#E8E1D7]">
             <table className="w-full text-sm">
               <thead className="bg-[#F6F2EC]">
@@ -265,6 +279,7 @@ export default function InvestorIntelligencePage() {
             </button>
           </div>
 
+          {dealError ? <p className="text-red-600 text-sm mb-3">{dealError}</p> : null}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {dealData.map((deal: any) => (
               <article key={deal.listingId} className="rounded-xl border border-[#E8E1D7] bg-white p-4">

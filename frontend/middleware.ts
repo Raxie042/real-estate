@@ -13,6 +13,14 @@ const PROTECTED_PATHS = [
   '/comparison',
   '/analytics',
   '/edit-listing',
+  '/investor-intelligence',
+  '/dashboard',
+  '/leads',
+  '/messages',
+  '/documents',
+  '/open-houses',
+  '/subscriptions',
+  '/listing-analytics',
 ];
 
 function getLanguageFromCookie(request: NextRequest): string {
