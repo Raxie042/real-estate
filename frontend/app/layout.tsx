@@ -26,6 +26,28 @@ export const metadata: Metadata = {
   title: 'Raxie Zenith Estate',
   description: 'Find your perfect property worldwide',
   keywords: ['real estate', 'properties', 'homes', 'apartments', 'buy', 'rent'],
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Raxie Estate',
+  },
+  formatDetection: { telephone: false },
+  themeColor: '#C9A96A',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
+  icons: {
+    icon: [
+      { url: '/icons/icon-192x192.svg', sizes: '192x192', type: 'image/svg+xml' },
+      { url: '/icons/icon-512x512.svg', sizes: '512x512', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/icons/icon-152x152.svg', sizes: '152x152', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default function RootLayout({

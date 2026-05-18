@@ -490,13 +490,13 @@ export default function Header() {
               {NAV_GROUPS.map(group => (
                 <div key={group.label} className="pb-2">
                   <p className="px-3 py-1 text-[11px] uppercase tracking-[0.15em] text-[#C9A96A] font-medium">{group.label}</p>
-                  {group.items.map(item => (
+                  {group.groups.flatMap(sub => sub.items).map((item: NavItem) => (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setIsMenuOpen(false)}
                       className={`block px-3 py-2 text-sm rounded-lg transition-colors hover:bg-[#F6F2EC] ${
-                        (item as { gold?: boolean }).gold ? 'text-[#C9A96A] font-medium' : 'text-[#2B2620]'
+                        item.gold ? 'text-[#C9A96A] font-medium' : 'text-[#2B2620]'
                       }`}
                     >
                       {item.label}
