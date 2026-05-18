@@ -79,9 +79,16 @@ export class SearchService {
     if (propertyType) where.propertyType = propertyType;
     if (listingType) where.listingType = listingType;
 
-    // First get all listings within approximate bounding box
-    const listings = await this.prisma.listing.findMany({
+    // Fetch a bounded candidate set from the DB using the bounding-box approximation.
+    // We take (skip + limit * 8) rows so that even after Haversine filtering reduces
+    // the set, we still have enough results to fill the requested page.
+    // This caps memory usage and avoids loading the entire table into Node.js.
+    const CANDIDATE_MULTIPLIER = 8;
+    const candidateLimit = skip + limit * CANDIDATE_MULTIPLIER;
+
+    const candidates = await this.prisma.listing.findMany({
       where,
+      take: candidateLimit,
       include: {
         user: {
           select: {
@@ -103,8 +110,8 @@ export class SearchService {
       },
     });
 
-    // Calculate distances and filter results within radius
-    const resultsWithDistance = listings
+    // Haversine-filter to only rows genuinely within the circle radius
+    const resultsWithDistance = candidates
       .map((listing) => ({
         ...listing,
         distance: this.calculateDistance(latitude, longitude, listing.latitude, listing.longitude),
@@ -121,7 +128,7 @@ export class SearchService {
       sorted = resultsWithDistance.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 
-    // Paginate
+    // Paginate in memory on the already-bounded set
     const total = sorted.length;
     const paginatedResults = sorted.slice(skip, skip + limit);
 

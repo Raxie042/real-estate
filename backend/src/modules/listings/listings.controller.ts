@@ -11,6 +11,7 @@ import {
   Request,
   HttpCode,
   BadRequestException,
+  Header,
 } from '@nestjs/common';
 import { ListingReportStatus } from '@prisma/client';
 import { ListingsService } from './listings.service';
@@ -32,6 +33,7 @@ export class ListingsController {
   ) {}
 
   @Get()
+  @Header('Cache-Control', 'public, max-age=30, stale-while-revalidate=60')
   async findAll(@Query() query: any) {
     const rawNeighborhoods = query.neighborhoods;
     const neighborhoods = Array.isArray(rawNeighborhoods)
@@ -67,6 +69,7 @@ export class ListingsController {
   }
 
   @Get('counts')
+  @Header('Cache-Control', 'public, max-age=120, stale-while-revalidate=300')
   async getPropertyTypeCounts() {
     return this.listingsService.getPropertyTypeCounts();
   }
@@ -88,6 +91,7 @@ export class ListingsController {
   }
 
   @Get('slug/:slug')
+  @Header('Cache-Control', 'public, max-age=60, stale-while-revalidate=120')
   async findBySlug(@Param('slug') slug: string) {
     return this.listingsService.findBySlug(slug);
   }
@@ -128,6 +132,7 @@ export class ListingsController {
   }
 
   @Get(':id')
+  @Header('Cache-Control', 'public, max-age=60, stale-while-revalidate=120')
   async findById(@Param('id') id: string) {
     return this.listingsService.findById(id);
   }

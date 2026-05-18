@@ -6,22 +6,26 @@ export function useListings(params?: any) {
   return useQuery({
     queryKey: ['listings', params],
     queryFn: () => api.listings.getAll(params).then((res) => res.data),
+    staleTime: 5 * 60 * 1000,  // 5 min — listings don't change every second
+    gcTime: 10 * 60 * 1000,    // Keep in memory for 10 min after last subscriber
   });
 }
 
 export function useListing(id: string) {
   return useQuery({
-    queryKey: ['listing', id],
+    queryKey: ['listing', 'id', id],
     queryFn: () => api.listings.getById(id).then((res) => res.data),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
 export function useListingBySlug(slug: string) {
   return useQuery({
-    queryKey: ['listing', slug],
+    queryKey: ['listing', 'slug', slug],  // distinct namespace from useListing to avoid cache collision
     queryFn: () => api.listings.getBySlug(slug).then((res) => res.data),
     enabled: !!slug,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

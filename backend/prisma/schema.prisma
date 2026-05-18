@@ -414,6 +414,7 @@ model Listing {
   @@index([slug])
   @@index([userId])
   @@index([agencyId])
+  @@index([latitude, longitude]) // geo search bounding-box queries
   @@map("listings")
 }
 

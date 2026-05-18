@@ -14,7 +14,7 @@ export default function FeaturedListings() {
     status: 'ACTIVE',
     sort: 'newest',
     page: 1,
-    limit: 60,
+    limit: 15, // Only fetch what we show — max 15 cards in the carousel
   });
 
   if (isLoading) {
@@ -36,7 +36,7 @@ export default function FeaturedListings() {
     );
   }
 
-  const featuredListings = (listings?.data || []).slice(0, 15);
+  const featuredListings = listings?.data || [];
 
   if (featuredListings.length === 0) {
     return null;
