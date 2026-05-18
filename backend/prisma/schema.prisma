@@ -220,6 +220,10 @@ model User {
   lastLoginAt DateTime? @map("last_login_at")
   deletedAt   DateTime? @map("deleted_at")
 
+  // Password reset (single-use, 1-hour expiry)
+  resetPasswordToken       String?   @map("reset_password_token")
+  resetPasswordTokenExpiry DateTime? @map("reset_password_token_expiry")
+
   @@map("users")
 }
 

@@ -232,7 +232,7 @@ function LoginPageContent() {
           </div>
 
           <div className="text-center">
-            <Link href="#" className="text-sm text-[#C9A96A] hover:text-[#B78F4A]">
+            <Link href="/forgot-password" className="text-sm text-[#C9A96A] hover:text-[#B78F4A]">
               {t('forgotPassword')}
             </Link>
           </div>

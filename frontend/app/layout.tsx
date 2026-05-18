@@ -7,6 +7,7 @@ import Footer from '@/components/layout/Footer';
 import ComparisonBar from '@/components/ComparisonBar';
 import PageTransition from '@/components/PageTransition';
 import ClientWidgets from '@/components/ClientWidgets';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -39,7 +40,9 @@ export default function RootLayout({
           <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-1 lux-site">
-              <PageTransition>{children}</PageTransition>
+              <ErrorBoundary>
+                <PageTransition>{children}</PageTransition>
+              </ErrorBoundary>
             </main>
             <Footer />
             <ComparisonBar />

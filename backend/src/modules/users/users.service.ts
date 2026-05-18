@@ -73,4 +73,10 @@ export class UsersService {
       data: { lastLoginAt: new Date() },
     });
   }
+
+  async findByResetToken(tokenHash: string) {
+    return this.prisma.user.findFirst({
+      where: { resetPasswordToken: tokenHash },
+    });
+  }
 }

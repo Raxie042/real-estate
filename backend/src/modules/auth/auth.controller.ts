@@ -20,6 +20,24 @@ import { MicrosoftAuthGuard } from './guards/microsoft-auth.guard';
 import { Throttle } from '@nestjs/throttler';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { IsEmail, IsString, MinLength, MaxLength } from 'class-validator';
+
+class ForgotPasswordDto {
+  @IsEmail()
+  email: string;
+}
+
+class ResetPasswordDto {
+  @IsString()
+  @MinLength(64)
+  @MaxLength(64)
+  token: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(128)
+  password: string;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -125,5 +143,22 @@ export class AuthController {
   @Post('me')
   async getMe(@Request() req) {
     return req.user;
+  }
+
+  @Post('forgot-password')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 3, ttl: 60_000 } }) // 3 requests per minute
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    await this.authService.forgotPassword(body.email);
+    // Always return same response to prevent email enumeration
+    return { message: 'If an account exists for that email, a reset link has been sent.' };
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    await this.authService.resetPassword(body.token, body.password);
+    return { message: 'Password reset successfully. Please log in.' };
   }
 }

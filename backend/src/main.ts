@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import cluster from 'node:cluster';
 import { cpus } from 'node:os';
 import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -64,6 +66,10 @@ async function bootstrap() {
     res.setHeader('X-XSS-Protection', '0');
     next();
   });
+
+  // Global exception filter and request logger
+  app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Validation pipe
   app.useGlobalPipes(
