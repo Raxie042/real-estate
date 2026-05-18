@@ -17,6 +17,8 @@ const NAV_GROUPS = [
     items: [
       { label: 'Browse Properties', href: '/properties' },
       { label: 'Advanced Search', href: '/search' },
+      { label: 'Lettings & Rentals', href: '/lettings' },
+      { label: 'Property Finder', href: '/property-finder' },
       { label: 'Coming Soon ✦', href: '/coming-soon', gold: true },
       { label: 'Sell Your Property', href: '/sell' },
       { label: 'Valuation', href: '/valuation' },
@@ -35,6 +37,9 @@ const NAV_GROUPS = [
       { label: 'Auctions', href: '/auctions' },
       { label: 'Magazine', href: '/magazine' },
       { label: 'Country Homes', href: '/country-homes' },
+      { label: 'Heritage & Listed', href: '/heritage' },
+      { label: 'International', href: '/international' },
+      { label: 'Virtual Tours', href: '/virtual-tours' },
       { label: 'Art & Architecture', href: '/art' },
       { label: 'Preferred Partners', href: '/partners' },
       { label: 'Private Collection ✦', href: '/private', gold: true },
@@ -58,6 +63,7 @@ const NAV_GROUPS = [
       { label: 'International Tax Guide', href: '/tax-guide' },
       { label: 'International Mortgage Calculator', href: '/international-mortgage' },
       { label: 'Green Homes', href: '/green-homes' },
+      { label: 'Sustainability & ESG', href: '/sustainability' },
     ],
   },
   {
