@@ -53,6 +53,7 @@ const NAV_GROUPS: NavGroup[] = [
         { label: 'Heritage & Listed', href: '/heritage' },
         { label: 'International', href: '/international' },
         { label: 'Auctions', href: '/auctions' },
+        { label: 'Planning & Development', href: '/planning' },
       ]},
       { heading: 'Exclusive', items: [
         { label: 'Virtual Tours', href: '/virtual-tours' },
@@ -101,10 +102,12 @@ const NAV_GROUPS: NavGroup[] = [
         { label: 'Land & Development Plots', href: '/land' },
         { label: 'Fractional Ownership', href: '/fractional' },
         { label: 'Portfolio Tracker', href: '/portfolio' },
+        { label: 'Private Office ✦', href: '/private-office', gold: true },
       ]},
       { heading: 'Finance & Data', items: [
         { label: 'Golden Visa Guide', href: '/golden-visa' },
         { label: 'Sold Prices', href: '/sold' },
+        { label: 'Planning & Development', href: '/planning' },
       ]},
     ],
   },
@@ -138,6 +141,7 @@ const NAV_GROUPS: NavGroup[] = [
         { label: 'Interior Design', href: '/interior-design' },
         { label: 'Short-Let & Seasonal', href: '/short-let' },
         { label: 'Relocation Services', href: '/relocation' },
+        { label: 'Podcast', href: '/podcast' },
         { label: 'Videos', href: '/videos' },
         { label: 'Offices', href: '/offices' },
         { label: 'Mobile App', href: '/app' },
