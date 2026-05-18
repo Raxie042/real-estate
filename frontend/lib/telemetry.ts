@@ -1,5 +1,7 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
+
 type TelemetryType = 'page_view' | 'event' | 'error';
 
 type TelemetryPayload = {
@@ -60,6 +62,17 @@ export function trackEvent(name: string, metadata?: Record<string, unknown>) {
 }
 
 export function trackError(message: string, options?: { stack?: string; source?: string; metadata?: Record<string, unknown> }) {
+  // Send to Sentry first (real-time alerts + grouping)
+  if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    const err = new Error(message);
+    if (options?.stack) err.stack = options.stack;
+    Sentry.captureException(err, {
+      tags: { source: options?.source },
+      extra: options?.metadata,
+    });
+  }
+
+  // Also send to internal telemetry endpoint
   sendTelemetry({
     type: 'error',
     message,

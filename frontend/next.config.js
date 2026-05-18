@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -39,4 +41,16 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+// Only wrap with Sentry when DSN is configured — zero overhead otherwise
+const hasSentry = !!(process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN);
+
+module.exports = hasSentry
+  ? withSentryConfig(nextConfig, {
+      // Suppresses Sentry CLI output during builds
+      silent: true,
+      // Upload source maps so stack traces show real line numbers in Sentry
+      hideSourceMaps: true,
+      // Disable Sentry's default tree-shaking optimisations (safer default)
+      disableLogger: true,
+    })
+  : nextConfig;

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -7,6 +8,23 @@ import { cpus } from 'node:os';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+
+// Sentry must be initialised before any other imports that could throw
+const sentryDsn = process.env.SENTRY_DSN;
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    environment: process.env.NODE_ENV || 'development',
+    // Capture 10% of transactions in production to stay within free quota
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    // Don't report 4xx errors — those are client mistakes
+    beforeSend(event) {
+      const status = event.extra?.status as number | undefined;
+      if (status && status >= 400 && status < 500) return null;
+      return event;
+    },
+  });
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

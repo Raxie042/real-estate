@@ -1,5 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
+import * as Sentry from '@sentry/node';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -26,7 +27,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message = exception.message;
     }
 
-    // Log error
+    // Log every error locally
     console.error('Exception caught:', {
       timestamp: new Date().toISOString(),
       path: request.url,
@@ -35,6 +36,21 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message,
       stack: exception instanceof Error ? exception.stack : null,
     });
+
+    // Forward unexpected server errors to Sentry for real-time alerts
+    // Skip 4xx — those are client mistakes, not bugs
+    if (status >= 500 && process.env.SENTRY_DSN) {
+      Sentry.withScope((scope) => {
+        scope.setTag('path', request.url);
+        scope.setTag('method', request.method);
+        scope.setExtra('status', status);
+        if (exception instanceof Error) {
+          Sentry.captureException(exception);
+        } else {
+          Sentry.captureMessage(message, 'error');
+        }
+      });
+    }
 
     response.status(status).json({
       statusCode: status,
