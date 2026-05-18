@@ -11,98 +11,138 @@ import { useTranslations } from 'next-intl';
 import { useWhiteLabel } from '@/lib/white-label-context';
 import { useRouter } from 'next/navigation';
 
-const NAV_GROUPS = [
+type NavItem = { label: string; href: string; gold?: boolean };
+type NavSubGroup = { heading: string; items: NavItem[] };
+type NavGroup = { label: string; cols: number; align: 'left' | 'right'; groups: NavSubGroup[] };
+
+const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Buy & Rent',
-    items: [
-      { label: 'Browse Properties', href: '/properties' },
-      { label: 'Advanced Search', href: '/search' },
-      { label: 'Lettings & Rentals', href: '/lettings' },
-      { label: 'Property Finder', href: '/property-finder' },
-      { label: 'Coming Soon ✦', href: '/coming-soon', gold: true },
-      { label: 'Sell Your Property', href: '/sell' },
-      { label: 'Valuation', href: '/valuation' },
-      { label: 'Compare Properties', href: '/comparison' },
+    cols: 2,
+    align: 'left',
+    groups: [
+      { heading: 'Find a Property', items: [
+        { label: 'Browse Properties', href: '/properties' },
+        { label: 'Advanced Search', href: '/search' },
+        { label: 'Lettings & Rentals', href: '/lettings' },
+        { label: 'Property Finder', href: '/property-finder' },
+      ]},
+      { heading: 'Buying & Selling', items: [
+        { label: 'Sell Your Property', href: '/sell' },
+        { label: 'Valuation', href: '/valuation' },
+        { label: 'Compare Properties', href: '/comparison' },
+        { label: 'Coming Soon ✦', href: '/coming-soon', gold: true },
+      ]},
     ],
   },
   {
     label: 'Collections',
-    items: [
-      { label: 'All Collections', href: '/collections' },
-      { label: 'Coastal Retreats', href: '/collections#coastal-retreats' },
-      { label: 'Country Estates', href: '/collections#country-estates' },
-      { label: 'City Penthouses', href: '/collections#city-penthouses' },
-      { label: 'New Developments', href: '/new-developments' },
-      { label: 'Commercial', href: '/commercial' },
-      { label: 'Auctions', href: '/auctions' },
-      { label: 'Magazine', href: '/magazine' },
-      { label: 'Country Homes', href: '/country-homes' },
-      { label: 'Heritage & Listed', href: '/heritage' },
-      { label: 'International', href: '/international' },
-      { label: 'Virtual Tours', href: '/virtual-tours' },
-      { label: 'Art & Architecture', href: '/art' },
-      { label: 'Preferred Partners', href: '/partners' },
-      { label: 'Private Collection ✦', href: '/private', gold: true },
+    cols: 3,
+    align: 'left',
+    groups: [
+      { heading: 'By Property Type', items: [
+        { label: 'All Collections', href: '/collections' },
+        { label: 'Coastal Retreats', href: '/collections#coastal-retreats' },
+        { label: 'Country Estates', href: '/collections#country-estates' },
+        { label: 'City Penthouses', href: '/collections#city-penthouses' },
+        { label: 'Country Homes', href: '/country-homes' },
+      ]},
+      { heading: 'Specialist Markets', items: [
+        { label: 'New Developments', href: '/new-developments' },
+        { label: 'Commercial', href: '/commercial' },
+        { label: 'Heritage & Listed', href: '/heritage' },
+        { label: 'International', href: '/international' },
+        { label: 'Auctions', href: '/auctions' },
+      ]},
+      { heading: 'Exclusive', items: [
+        { label: 'Virtual Tours', href: '/virtual-tours' },
+        { label: 'Art & Architecture', href: '/art' },
+        { label: 'Magazine', href: '/magazine' },
+        { label: 'Preferred Partners', href: '/partners' },
+        { label: 'Private Collection ✦', href: '/private', gold: true },
+      ]},
     ],
   },
   {
     label: 'Research',
-    items: [
-      { label: 'Agent Rankings', href: '/agent-rankings' },
-      { label: 'Find an Agent', href: '/agents' },
-      { label: 'Agencies', href: '/agencies' },
-      { label: 'Market Reports', href: '/resources' },
-      { label: 'Guides & Advice', href: '/guides' },
-      { label: 'Neighbourhood Guides', href: '/neighbourhoods' },
-      { label: 'Investor Intelligence', href: '/investor-intelligence' },
-      { label: 'Wealth Reports', href: '/wealth-report' },
-      { label: 'Seasonal Market Calendar', href: '/market-calendar' },
-      { label: 'Stamp Duty Calculator', href: '/stamp-duty' },
-      { label: 'Rental Yield Calculator', href: '/rental-yield' },
-      { label: 'Currency Converter', href: '/currency-converter' },
-      { label: 'International Tax Guide', href: '/tax-guide' },
-      { label: 'International Mortgage Calculator', href: '/international-mortgage' },
-      { label: 'Green Homes', href: '/green-homes' },
-      { label: 'Sustainability & ESG', href: '/sustainability' },
+    cols: 3,
+    align: 'left',
+    groups: [
+      { heading: 'Professionals', items: [
+        { label: 'Agent Rankings', href: '/agent-rankings' },
+        { label: 'Find an Agent', href: '/agents' },
+        { label: 'Agencies', href: '/agencies' },
+        { label: 'Investor Intelligence', href: '/investor-intelligence' },
+        { label: 'Wealth Reports', href: '/wealth-report' },
+      ]},
+      { heading: 'Knowledge', items: [
+        { label: 'Market Reports', href: '/resources' },
+        { label: 'Guides & Advice', href: '/guides' },
+        { label: 'Neighbourhood Guides', href: '/neighbourhoods' },
+        { label: 'Seasonal Market Calendar', href: '/market-calendar' },
+        { label: 'Green Homes', href: '/green-homes' },
+        { label: 'Sustainability & ESG', href: '/sustainability' },
+      ]},
+      { heading: 'Calculators & Data', items: [
+        { label: 'Stamp Duty Calculator', href: '/stamp-duty' },
+        { label: 'Rental Yield Calculator', href: '/rental-yield' },
+        { label: 'Currency Converter', href: '/currency-converter' },
+        { label: 'International Tax Guide', href: '/tax-guide' },
+        { label: 'International Mortgage', href: '/international-mortgage' },
+      ]},
     ],
   },
   {
     label: 'Invest',
-    items: [
-      { label: 'Land & Development Plots', href: '/land' },
-      { label: 'Fractional Ownership', href: '/fractional' },
-      { label: 'Portfolio Tracker', href: '/portfolio' },
-      { label: 'Golden Visa Guide', href: '/golden-visa' },
-      { label: 'Sold Prices', href: '/sold' },
+    cols: 2,
+    align: 'right',
+    groups: [
+      { heading: 'Property Investment', items: [
+        { label: 'Land & Development Plots', href: '/land' },
+        { label: 'Fractional Ownership', href: '/fractional' },
+        { label: 'Portfolio Tracker', href: '/portfolio' },
+      ]},
+      { heading: 'Finance & Data', items: [
+        { label: 'Golden Visa Guide', href: '/golden-visa' },
+        { label: 'Sold Prices', href: '/sold' },
+      ]},
     ],
   },
   {
     label: 'About',
-    items: [
-      { label: 'About Us', href: '/about' },
-      { label: 'Awards & Recognition', href: '/awards' },
-      { label: 'Testimonials', href: '/testimonials' },
-      { label: 'Developers', href: '/developers' },
-      { label: 'Events', href: '/events' },
-      { label: 'Videos', href: '/videos' },
-      { label: 'Offices', href: '/offices' },
-      { label: 'Press', href: '/press' },
-      { label: 'Philanthropy', href: '/philanthropy' },
-      { label: 'Founding Partner', href: '/founding-partner' },
-      { label: 'Financing', href: '/financing' },
-      { label: 'Property Management', href: '/property-management' },
-      { label: 'Concierge Services', href: '/concierge' },
-      { label: 'Insurance', href: '/insurance' },
-      { label: 'Conveyancing', href: '/conveyancing' },
-      { label: 'Mortgage Brokers', href: '/mortgage-brokers' },
-      { label: 'Photography & Staging', href: '/staging' },
-      { label: 'Interior Design', href: '/interior-design' },
-      { label: 'Short-Let & Seasonal', href: '/short-let' },
-      { label: 'Mobile App', href: '/app' },
-      { label: 'Relocation Services', href: '/relocation' },
-      { label: 'Contact', href: '/contact' },
-      { label: 'Careers', href: '/careers' },
-      { label: 'Accessibility', href: '/accessibility' },
+    cols: 3,
+    align: 'right',
+    groups: [
+      { heading: 'Company', items: [
+        { label: 'About Us', href: '/about' },
+        { label: 'Awards & Recognition', href: '/awards' },
+        { label: 'Testimonials', href: '/testimonials' },
+        { label: 'Events', href: '/events' },
+        { label: 'Press', href: '/press' },
+        { label: 'Philanthropy', href: '/philanthropy' },
+        { label: 'Founding Partner', href: '/founding-partner' },
+        { label: 'Careers', href: '/careers' },
+        { label: 'Contact', href: '/contact' },
+      ]},
+      { heading: 'Property Services', items: [
+        { label: 'Financing', href: '/financing' },
+        { label: 'Property Management', href: '/property-management' },
+        { label: 'Concierge Services', href: '/concierge' },
+        { label: 'Insurance', href: '/insurance' },
+        { label: 'Conveyancing', href: '/conveyancing' },
+        { label: 'Mortgage Brokers', href: '/mortgage-brokers' },
+        { label: 'Developers', href: '/developers' },
+      ]},
+      { heading: 'Lifestyle Services', items: [
+        { label: 'Photography & Staging', href: '/staging' },
+        { label: 'Interior Design', href: '/interior-design' },
+        { label: 'Short-Let & Seasonal', href: '/short-let' },
+        { label: 'Relocation Services', href: '/relocation' },
+        { label: 'Videos', href: '/videos' },
+        { label: 'Offices', href: '/offices' },
+        { label: 'Mobile App', href: '/app' },
+        { label: 'Accessibility', href: '/accessibility' },
+      ]},
     ],
   },
 ];
@@ -277,21 +317,43 @@ export default function Header() {
                   </button>
 
                   {activeNav === i && (
-                    <div className="absolute top-full left-0 mt-0 w-52 bg-white border border-[#E8E1D7] shadow-xl rounded-b-xl py-2 z-50">
-                      {group.items.map(item => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setActiveNav(null)}
-                          className={`block px-5 py-2.5 text-[13px] transition-colors hover:bg-[#F6F2EC] ${
-                            (item as { gold?: boolean }).gold
-                              ? 'text-[#C9A96A] font-medium'
-                              : 'text-[#2B2620]'
-                          }`}
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
+                    <div
+                      className={`absolute top-full mt-0 bg-white border-t-2 border-t-[#C9A96A] border-x border-b border-[#E8E1D7] shadow-2xl z-50 py-7 px-8 ${
+                        group.align === 'right' ? 'right-0' : 'left-0'
+                      }`}
+                      style={{ width: `${group.cols * 220}px` }}
+                    >
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: `repeat(${group.cols}, 1fr)`,
+                          columnGap: '32px',
+                        }}
+                      >
+                        {group.groups.map((subGroup) => (
+                          <div key={subGroup.heading}>
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#C9A96A] mb-3 pb-2 border-b border-[#E8E1D7]">
+                              {subGroup.heading}
+                            </p>
+                            <div className="space-y-0.5">
+                              {subGroup.items.map(item => (
+                                <Link
+                                  key={item.href}
+                                  href={item.href}
+                                  onClick={() => setActiveNav(null)}
+                                  className={`block px-2 py-2 text-[13px] rounded transition-colors hover:bg-[#F6F2EC] hover:text-[#C9A96A] ${
+                                    item.gold
+                                      ? 'text-[#C9A96A] font-medium'
+                                      : 'text-[#2B2620]'
+                                  }`}
+                                >
+                                  {item.label}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
