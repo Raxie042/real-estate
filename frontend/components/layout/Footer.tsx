@@ -97,6 +97,21 @@ export default function Footer() {
                   {t('cookiePolicy')}
                 </Link>
               </li>
+              <li>
+                <Link href="/security" className="text-[#C9B8A3] hover:text-[#C9A96A]">
+                  Data Security
+                </Link>
+              </li>
+              <li>
+                <Link href="/copyright" className="text-[#C9B8A3] hover:text-[#C9A96A]">
+                  Copyright &amp; IP
+                </Link>
+              </li>
+              <li>
+                <Link href="/aml" className="text-[#C9B8A3] hover:text-[#C9A96A]">
+                  Anti-Money Laundering
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
