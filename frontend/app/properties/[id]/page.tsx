@@ -1,7 +1,137 @@
-'use client';
+import type { Metadata } from 'next';
+import Script from 'next/script';
+import PropertyDetailClient from './PropertyDetailClient';
 
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const BASE_URL = 'https://raxiezenithestate.com';
+
+async function getListing(id: string) {
+  try {
+    const res = await fetch(`${API_URL}/api/listings/${id}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> }
+): Promise<Metadata> {
+  const { id } = await params;
+  const listing = await getListing(id);
+
+  if (!listing) {
+    return {
+      title: 'Property Not Found',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const address = [listing.addressLine1, listing.city, listing.state]
+    .filter(Boolean)
+    .join(', ');
+  const price = listing.price
+    ? new Intl.NumberFormat('en-GB', { style: 'currency', currency: listing.currency || 'GBP', maximumFractionDigits: 0 }).format(Number(listing.price))
+    : '';
+  const beds = listing.bedrooms ? `${listing.bedrooms} bed` : '';
+  const baths = listing.bathrooms ? `${listing.bathrooms} bath` : '';
+  const details = [beds, baths, listing.propertyType].filter(Boolean).join(' · ');
+  const description = listing.description
+    ? listing.description.slice(0, 155)
+    : `${details} in ${address}. ${price ? `Asking ${price}.` : ''} Exclusive listing on Raxie Zenith Estate.`;
+
+  const ogImage = listing.images?.[0] || '/og-default.jpg';
+  const url = `${BASE_URL}/properties/${id}`;
+
+  return {
+    title: listing.title,
+    description,
+    alternates: { canonical: url },
+    robots: { index: true, follow: true },
+    openGraph: {
+      type: 'website',
+      url,
+      title: listing.title,
+      description,
+      images: [{ url: ogImage, width: 1200, height: 800, alt: listing.title }],
+      siteName: 'Raxie Zenith Estate',
+      locale: 'en_GB',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: listing.title,
+      description,
+      images: [ogImage],
+    },
+  };
+}
+
+export default async function PropertyDetailPage(
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const listing = await getListing(id);
+
+  const jsonLd = listing
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'RealEstateListing',
+        name: listing.title,
+        description: listing.description || '',
+        url: `${BASE_URL}/properties/${id}`,
+        image: listing.images || [],
+        offers: {
+          '@type': 'Offer',
+          price: listing.price ? Number(listing.price) : undefined,
+          priceCurrency: listing.currency || 'GBP',
+          availability: 'https://schema.org/InStock',
+        },
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: listing.addressLine1 || '',
+          addressLocality: listing.city || '',
+          addressRegion: listing.state || '',
+          postalCode: listing.zipCode || '',
+          addressCountry: listing.country || 'GB',
+        },
+        numberOfRooms: listing.bedrooms,
+        numberOfBathroomsTotal: listing.bathrooms,
+        floorSize: listing.sqft
+          ? { '@type': 'QuantitativeValue', value: Number(listing.sqft), unitCode: 'FTK' }
+          : undefined,
+        geo:
+          listing.latitude && listing.longitude
+            ? {
+                '@type': 'GeoCoordinates',
+                latitude: listing.latitude,
+                longitude: listing.longitude,
+              }
+            : undefined,
+        provider: {
+          '@type': 'RealEstateAgent',
+          name: 'Raxie Zenith Estate',
+          url: BASE_URL,
+        },
+      }
+    : null;
+
+  return (
+    <>
+      {jsonLd && (
+        <Script
+          id="property-jsonld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <PropertyDetailClient />
+    </>
+  );
+}
+
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';

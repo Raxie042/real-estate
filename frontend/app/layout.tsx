@@ -22,10 +22,52 @@ const cormorant = Cormorant_Garamond({
   display: 'swap',
 });
 
+const BASE_URL = 'https://raxiezenithestate.com';
+
 export const metadata: Metadata = {
-  title: 'Raxie Zenith Estate',
-  description: 'Find your perfect property worldwide',
-  keywords: ['real estate', 'properties', 'homes', 'apartments', 'buy', 'rent'],
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: 'Raxie Zenith Estate | Luxury Property',
+    template: '%s | Raxie Zenith Estate',
+  },
+  description:
+    'Discover exceptional luxury properties in London, Dubai and worldwide. Buy, sell or rent prime real estate with Raxie Zenith Estate.',
+  keywords: [
+    'luxury real estate', 'luxury property London', 'prime property', 'buy property London',
+    'Mayfair properties', 'Knightsbridge homes', 'Chelsea real estate', 'luxury homes for sale',
+    'high-end property', 'exclusive real estate', 'Raxie Zenith Estate',
+  ],
+  authors: [{ name: 'Raxie Zenith Estate', url: BASE_URL }],
+  creator: 'Raxie Zenith Estate',
+  publisher: 'Raxie Zenith Estate',
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  openGraph: {
+    type: 'website',
+    locale: 'en_GB',
+    url: BASE_URL,
+    siteName: 'Raxie Zenith Estate',
+    title: 'Raxie Zenith Estate | Luxury Property',
+    description:
+      'Discover exceptional luxury properties in London, Dubai and worldwide. Buy, sell or rent prime real estate with Raxie Zenith Estate.',
+    images: [
+      {
+        url: '/og-default.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Raxie Zenith Estate — Luxury Property',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@RaxieEstate',
+    creator: '@RaxieEstate',
+    title: 'Raxie Zenith Estate | Luxury Property',
+    description:
+      'Discover exceptional luxury properties in London, Dubai and worldwide.',
+    images: ['/og-default.jpg'],
+  },
+  alternates: { canonical: BASE_URL },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
